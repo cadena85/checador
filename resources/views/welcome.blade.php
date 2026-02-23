@@ -7,35 +7,114 @@
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    ipn: {
+                        guinda: '#6f1d46',
+                        gris: '#636569',
+                        fondo: '#f4f4f4'
+                    }
+                },
+                fontFamily: {
+                    sans: ['Noto Sans', 'sans-serif']
+                }
+            }
+        }
+    }
+    </script>
 </head>
 
-<body class="min-h-screen flex items-center justify-center bg-gray-100">
+<body class="bg-ipn-fondo font-sans min-h-screen flex flex-col">
+        <audio id="audioConfirmacion" preload="auto">
+            <source src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" type="audio/ogg">
+        </audio>
+        <!-- BARRA SUPERIOR CON RELOJ -->
+        <div class="bg-ipn-guinda text-white py-2">
+            <div class="max-w-6xl mx-auto px-6 flex justify-between items-center text-sm">
+                <span class="tracking-wide">Sistema de Registro de Asistencia</span>
+                <span id="reloj" class="font-semibold tracking-widest text-base"></span>
+            </div>
+        </div>
+        <!-- HEADER -->
+        <header class="bg-white border-b shadow-sm">
+            <div class="max-w-6xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-8">
+                    <img src="{{ asset('images/logo-ipn.jpg') }}"
+                    alt="Logotipo IPN"
+                    class="h-16">
+                    <img src="{{ asset('images/logoCDA50.png') }}"
+                    alt="Logotipo CDA"
+                    class="h-16">
+                </div>
+                <div class="text-center md:text-right">
+                    <h1 class="text-xl font-semibold text-ipn-guinda">
+                    Centro de Desarrollo Aeroespacial
+                    </h1>
+                    <p class="text-sm text-gray-600">
+                        Registro institucional de asistencia
+                    </p>
+                </div>
+            </div>
+        </header>
+        
+<div class="w-full max-w-md mx-auto
+            bg-white/95
+            border-t-8 border-[#6b0f1a]
+            shadow-2xl
+            rounded-2xl
+            p-8
+            text-center
+            space-y-6
+            backdrop-blur-sm">
 
-<div class="w-full max-w-md bg-white shadow-lg rounded-xl p-6 text-center space-y-6">
+    <!-- Línea secundaria institucional -->
+    <div class="w-full h-1 bg-[#d4af37] rounded-full"></div>
 
     <!-- Estado conexión -->
     <div id="estadoConexion"
-         class="text-sm font-semibold px-3 py-1 rounded-full bg-gray-300 text-gray-700 inline-block">
+         class="text-xs font-semibold tracking-wide px-3 py-1 rounded-full bg-gray-200 text-gray-700 inline-block">
         Sin conexión
     </div>
 
     <!-- Pantalla espera -->
     <div id="pantallaEspera">
-        <h1 class="text-2xl font-bold">Esperando registro...</h1>
+        <h2 class="text-3xl font-bold text-[#6b0f1a]">
+            Esperando registro
+        </h2>
+        <p class="text-sm text-gray-500 tracking-wide">
+            Sistema de Control de Asistencia
+        </p>
     </div>
 
     <!-- Pantalla resultado -->
-    <div id="pantallaResultado" class="hidden space-y-3">
-        <div class="text-lg font-semibold">
+    <div id="pantallaResultado" class="hidden text-center space-y-4">
+        <div class="text-xl font-semibold text-gray-700">
             ID: <span id="usuarioId"></span>
         </div>
-        <div>
+        <div class="text-sm text-gray-500">
             Hora: <span id="horaRegistro"></span>
         </div>
-        <div id="mensajeEstado" class="text-xl font-bold"></div>
+        <div id="mensajeEstado"
+             class="text-2xl font-bold">
+        </div>
+    </div>
+
+    <!-- Reloj institucional -->
+    <div class="pt-4 border-t border-gray-200">
+        <div id="reloj"
+             class="text-3xl font-mono font-bold text-[#6b0f1a] tracking-widest">
+        </div>
+        <div id="fecha"
+             class="text-xs text-gray-500 tracking-wide">
+        </div>
     </div>
 
 </div>
+
+
 
 <script>
     const socket = io("http://localhost:3000");
@@ -135,6 +214,8 @@
     });
 
 </script>
-
+    <footer class="bg-ipn-guinda text-white text-center py-4 text-sm tracking-wide">
+        © 2026 Instituto Politécnico Nacional
+    </footer>
 </body>
 </html>
