@@ -59,7 +59,7 @@
                 </div>
             </div>
         </header>
-        
+
 <div class="w-full max-w-md mx-auto
             bg-white/95
             border-t-8 border-[#6b0f1a]
@@ -214,6 +214,28 @@
     });
 
 </script>
+<script>
+function actualizarReloj() {
+    const ahora = new Date();
+
+    const opcionesFecha = {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    };
+
+    const hora = ahora.toLocaleTimeString('es-MX');
+    const fecha = ahora.toLocaleDateString('es-MX', opcionesFecha);
+
+    document.getElementById('reloj').textContent = hora;
+    document.getElementById('fecha').textContent = fecha;
+}
+
+setInterval(actualizarReloj, 1000);
+actualizarReloj();
+</script>
+
     <footer class="bg-ipn-guinda text-white text-center py-4 text-sm tracking-wide">
         © 2026 Instituto Politécnico Nacional
     </footer>
