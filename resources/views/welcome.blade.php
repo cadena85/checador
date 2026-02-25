@@ -69,6 +69,9 @@
             </div>
             <!-- Pantalla resultado -->
             <div id="pantallaResultado" class="hidden text-center space-y-4">
+                <div id="tipoRegistro"
+                    class="text-4xl font-extrabold tracking-widest">
+                </div>
                 <div class="text-xl font-semibold text-gray-700">
                     ID: <span id="usuarioId"></span>
                 </div>
@@ -110,8 +113,14 @@
     </footer>
     </body>
     
-    <script>
-    const socket = io("http://localhost:3000");
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+<script>
+    // 2. CAMBIO: Asegúrate de que la URL sea exacta
+    const socket = io("http://localhost:3000", {
+        transports: ['websocket'] // Forzar websocket ayuda a evitar bloqueos de CORS iniciales
+    });
+
     const estadoConexion = document.getElementById("estadoConexion");
     const pantallaEspera = document.getElementById("pantallaEspera");
     const pantallaResultado = document.getElementById("pantallaResultado");
@@ -119,78 +128,84 @@
     const horaRegistroSpan = document.getElementById("horaRegistro");
     const mensajeEstado = document.getElementById("mensajeEstado");
     let bloqueado = false;
-    // =============================
-    // ESTADO CONEXIÓN
-    // =============================
+
     socket.on("connect", () => {
         estadoConexion.textContent = "En línea";
-        estadoConexion.className =
-            "text-sm font-semibold px-3 py-1 rounded-full bg-green-200 text-green-800 inline-block";
+        estadoConexion.className = "text-sm font-semibold px-3 py-1 rounded-full bg-green-200 text-green-800 inline-block";
     });
+
     socket.on("disconnect", () => {
         estadoConexion.textContent = "Sin conexión";
-        estadoConexion.className =
-            "text-sm font-semibold px-3 py-1 rounded-full bg-red-200 text-red-800 inline-block";
+        estadoConexion.className = "text-sm font-semibold px-3 py-1 rounded-full bg-red-200 text-red-800 inline-block";
     });
-    // =============================
-    // EVENTO CHECADA
-    // =============================
-    iniciarProceso();
-    socket.on("nueva-checada", async(data) => {
+
+    socket.on("nueva-checada", async (data) => {
         if (bloqueado) return;
         bloqueado = true;
+        
+        iniciarProceso(); 
+
+        // Lógica de tiempo
         const ahora = new Date();
         const horaActual = ahora.getHours() * 60 + ahora.getMinutes();
         const HORA_ENTRADA = 9 * 60;
         const HORA_SALIDA = 18 * 60;
-        // Demo simple: antes de 13:00 es entrada
+        
         const tipo = horaActual < 13 * 60 ? 'entrada' : 'salida';
         let estado = 'a tiempo';
+        
         if (tipo === 'entrada' && horaActual > HORA_ENTRADA) {
             estado = 'llegaste tarde';
         } else if (tipo === 'salida' && horaActual < HORA_SALIDA) {
             estado = 'estas saliendo temprano';
         }
-        // Mostrar resultado
+
+        // Actualizar UI
         usuarioIdSpan.textContent = data.id;
         horaRegistroSpan.textContent = data.hora;
         mensajeEstado.textContent = estado;
-        if (estado === 'llegaste tarde') {
-            mensajeEstado.className = "text-red-600 text-xl font-bold";
-        } else if (estado === 'estas saliendo temprano') {
-            mensajeEstado.className = "text-yellow-600 text-xl font-bold";
-        } else {
-            mensajeEstado.className = "text-green-600 text-xl font-bold";
-        }
+        
+        // Clases de color
+        mensajeEstado.className = (estado === 'llegaste tarde') ? "text-red-600 text-xl font-bold" : 
+                                 (estado === 'estas saliendo temprano') ? "text-yellow-600 text-xl font-bold" : 
+                                 "text-green-600 text-xl font-bold";
+
         pantallaEspera.classList.add("hidden");
         pantallaResultado.classList.remove("hidden");
-        // Enviar a Laravel (demo)
-        await fetch("/registro-demo", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": document
-                    .querySelector('meta[name="csrf-token"]') ?
-                    .getAttribute("content")
-            },
-            body: JSON.stringify({
-                user_id: data.id,
-                hora: data.hora,
-                tipo: tipo,
-                estado: estado
-            })
-        });
-        // =============================
-        // REGRESAR AUTOMÁTICAMENTE
-        // =============================
+
+        // Simular envío a Laravel y finalizar barra
+        try {
+            /* await fetch(...) */ 
+            // 3. CAMBIO: Finalizar proceso aquí adentro
+            finalizarProceso(); 
+        } catch (e) {
+            finalizarProceso();
+        }
+
         setTimeout(() => {
             pantallaResultado.classList.add("hidden");
             pantallaEspera.classList.remove("hidden");
             bloqueado = false;
         }, 5000);
     });
-    finalizarProceso();
-    </script>
+
+    // Funciones de UI
+    function iniciarProceso() {
+        const loader = document.getElementById('loaderProceso');
+        const barra = document.getElementById('barraProgreso');
+        loader.classList.remove('hidden');
+        barra.style.width = '0%';
+        setTimeout(() => barra.style.width = '75%', 100);
+    }
+
+    function finalizarProceso() {
+        const barra = document.getElementById('barraProgreso');
+        barra.style.width = '100%';
+        setTimeout(() => {
+            document.getElementById('loaderProceso').classList.add('hidden');
+        }, 500);
+    }
+</script>
 
     <script>
         function actualizarReloj() {
@@ -209,6 +224,8 @@
         setInterval(actualizarReloj, 1000);
         actualizarReloj();
     </script>
+
+
     <script>
         function iniciarProceso() {
     const loader = document.getElementById('loaderProceso');
@@ -233,4 +250,6 @@ function finalizarProceso() {
 }
 
     </script>
+
+
 </html>
