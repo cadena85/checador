@@ -1,64 +1,72 @@
-//import ZKLib from 'node-zklib';
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
 import path from 'path';
+import fs from 'fs'; // Módulo para leer archivos
 import { fileURLToPath } from 'url';
 
-// Para que __dirname funcione en modo "module"
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 const server = http.createServer(app);
+const io = new Server(server, { cors: { origin: "*" } });
 
-// Configuración de Socket.io con CORS corregido
-const io = new Server(server, { 
-    cors: { 
-        origin: "*" 
-    } 
-});
+// 1. Cargar la base de datos de empleados desde el JSON
+const rutaHorarios = path.join(__dirname, 'horarios.json');
+let empleados = [];
 
-// Servir la página web corregido con la flecha =>
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
+try {
+    const data = fs.readFileSync(rutaHorarios, 'utf8');
+    empleados = JSON.parse(data);
+    console.log(`✅ Base de datos cargada: ${empleados.length} empleados encontrados.`);
+} catch (err) {
+    console.error("❌ Error al leer horarios.json:", err);
+}
 
 function iniciarSimulador() {
-
-    console.log('🧪 Simulador de checadas activo (cada 5 segundos)');
-
-    const empleados = [
-        '250529',
-        '180321',
-        '190876',
-        '210445',
-        '170998',
-        '200112'
-    ];
+    console.log('🧪 Simulador con datos reales activo (cada 10 segundos)');
 
     setInterval(() => {
+        if (empleados.length === 0) return;
 
-        const idAleatorio = empleados[Math.floor(Math.random() * empleados.length)];
+        // 2. Seleccionar un empleado aleatorio del JSON
+        const empleado = empleados[Math.floor(Math.random() * empleados.length)];
+        const ahora = new Date();
+        const horaActualStr = ahora.getHours().toString().padStart(2, '0') + ":" + 
+                              ahora.getMinutes().toString().padStart(2, '0');
+        
+        // Determinar si es entrada o salida (50/50 de probabilidad)
+        const esEntrada = Math.random() > 0.5;
+        const tipo = esEntrada ? 'ENTRADA' : 'SALIDA';
+        
+        // 3. Lógica básica de estado (Comparación de horas)
+        let estado = "A TIEMPO";
+        const horaReferencia = esEntrada ? empleado.entrada : empleado.salida;
+        
+        if (esEntrada && horaActualStr > empleado.entrada) {
+            estado = "RETARDO";
+        } else if (!esEntrada && horaActualStr < empleado.salida) {
+            estado = "SALIDA-ANTICIPADA";
+        }
 
         const registro = {
-            id: idAleatorio,
-            hora: new Date().toLocaleTimeString(),
-            tipo: Math.random() > 0.5 ? 'entrada' : 'salida'
+            id: empleado.id,
+            nombre: empleado.nombre, // Enviamos el nombre también
+            hora: ahora.toLocaleTimeString(),
+            tipo: tipo,
+            estado: estado
         };
 
         console.log('Simulado:', registro);
 
+        // 4. Enviar al navegador
         io.emit('nueva-checada', registro);
 
     }, 10000);
 }
 
-
-// Iniciar servidor en el puerto 3000
 server.listen(3000, () => {
-    console.log('🌐 Servidor web listo en: http://localhost:3000');
+    console.log('🌐 Servidor simulador en: http://localhost:3000');
     iniciarSimulador();
 });
-
-

@@ -1,0 +1,13 @@
+[
+  { "id": 27, "nombre": "CESAR RAUL RINCON JIMENEZ", "entrada": "09:00", "salida": "16:00" },
+  { "id": 17, "nombre": "EDUARDO ANTONIO LOPEZ MARINES", "entrada": "08:00", "salida": "15:00" },
+  { "id": 2,  "nombre": "EMMANUEL CERVANTES HERNANDEZ", "entrada": "08:00", "salida": "15:00" },
+  { "id": 14, "nombre": "LUIS ENRIQUE IÑIGUEZ MORALES", "entrada": "10:00", "salida": "17:00" },
+  { "id": 19, "nombre": "PEDRO MARTINEZ NAJERA", "entrada": "08:00", "salida": "15:00" },
+  { "id": 10, "nombre": "MARIA FERNANDA GUTIERREZ LOZANO", "entrada": "09:00", "salida": "16:00" },
+  { "id": 25, "nombre": "GERARDO OCTAVIO PLAISANT ZENDEJAS", "entrada": "11:30", "salida": "19:30" },
+  { "id": 7,  "nombre": "KARLA PATRICIA GONZALEZ ORTEGA", "entrada": "09:00", "salida": "16:00" },
+  { "id": 33, "nombre": "SERGIO ROBERTO VIÑALS MARQUEZ", "entrada": "08:30", "salida": "15:30" },
+  { "id": 37, "nombre": "JORGE GOMEZ VILLARREAL", "entrada": "09:00", "salida": "16:00" },
+  { "id": 36, "nombre": "ROBERTO CARLOS ESPERANZA SANCHEZ", "entrada": "09:00", "salida": "16:00" }
+]
