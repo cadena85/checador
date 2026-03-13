@@ -44,12 +44,28 @@ socket.on("nueva-checada", (data) => {
     const audioExito = document.getElementById("audioExito");
     const audioAlerta = document.getElementById("audioAlerta");
 
-    if (data.estado === "RETARDO" || data.estado === "SALIDA-ANTICIPADA") {
+    if (data.estado === "SALIDA-ANTICIPADA") {
         mensajeEstado.className = "text-red-600 text-2xl font-bold";
         audioAlerta.play(); // Sonido de alerta
     } else {
-        mensajeEstado.className = "text-green-600 text-2xl font-bold";
-        audioExito.play(); // Sonido normal
+        if (data.estado.includes("INVÁLIDO")) {
+            tipoRegistro.textContent = "AVISO DE INCIDENCIA"; // Sugerencia de título
+            tipoRegistro.className = "text-2xl font-extrabold tracking-widest text-red-700";
+            
+            // Ajuste para el mensaje largo
+            mensajeEstado.textContent = data.estado;
+            mensajeEstado.className = "text-red-600 text-lg font-bold leading-tight px-4 mt-2";
+            
+            audioAlerta.play();
+        } else {
+            tipoRegistro.textContent = "REGISTRO EXITOSO";
+            tipoRegistro.className = "text-3xl font-extrabold tracking-widest text-green-700";
+            
+            mensajeEstado.textContent = data.estado;
+            mensajeEstado.className = "text-green-600 text-2xl font-bold";
+            
+            audioExito.play();
+        }
     }
 
     pantallaEspera.classList.add("hidden");

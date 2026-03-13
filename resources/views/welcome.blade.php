@@ -72,7 +72,7 @@
                 <!-- Pantalla resultado -->
                 <div id="pantallaResultado" class="hidden text-center space-y-4">
                     <div id="tipoRegistro"
-                        class="text-4xl font-extrabold tracking-widest">
+                        class="transition-all duration-500">
                     </div>
                     <div class="text-xl font-semibold text-gray-700">
                         <span id="nombreUsuario"></span>
@@ -81,7 +81,7 @@
                         Hora: <span id="horaRegistro"></span>
                     </div>
                     <div id="mensajeEstado"
-                        class="text-2xl font-bold">
+                        class="max-w-xs mx-auto italic">
                     </div>
                 </div>
                 <!-- Loader institucional -->

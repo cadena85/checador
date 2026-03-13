@@ -2,7 +2,7 @@ import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
 import path from 'path';
-import fs from 'fs'; // Módulo para leer archivos
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -12,55 +12,53 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
-// 1. Cargar la base de datos de empleados desde el JSON
 const rutaHorarios = path.join(__dirname, 'horarios.json');
 let empleados = [];
 
 try {
     const data = fs.readFileSync(rutaHorarios, 'utf8');
     empleados = JSON.parse(data);
-    console.log(`✅ Base de datos cargada: ${empleados.length} empleados encontrados.`);
+    console.log(`✅ Simulador: ${empleados.length} empleados cargados.`);
 } catch (err) {
     console.error("❌ Error al leer horarios.json:", err);
 }
 
 function iniciarSimulador() {
-    console.log('🧪 Simulador con datos reales activo (cada 10 segundos)');
+    console.log('🧪 Simulador con Tolerancia de 30 min Activo (10s)');
 
     setInterval(() => {
         if (empleados.length === 0) return;
 
-        // 2. Seleccionar un empleado aleatorio del JSON
         const empleado = empleados[Math.floor(Math.random() * empleados.length)];
         const ahora = new Date();
-        const horaActualStr = ahora.getHours().toString().padStart(2, '0') + ":" + 
-                              ahora.getMinutes().toString().padStart(2, '0');
         
-        // Determinar si es entrada o salida (50/50 de probabilidad)
+        // Simulación: 50% probabilidad de ser entrada o salida
         const esEntrada = Math.random() > 0.5;
         const tipo = esEntrada ? 'ENTRADA' : 'SALIDA';
         
-        // 3. Lógica básica de estado (Comparación de horas)
+        // Lógica de validación con minutos
+        const minutosActuales = (ahora.getHours() * 60) + ahora.getMinutes();
         let estado = "A TIEMPO";
-        const horaReferencia = esEntrada ? empleado.entrada : empleado.salida;
-        
-        if (esEntrada && horaActualStr > empleado.entrada) {
-            estado = "RETARDO";
-        } else if (!esEntrada && horaActualStr < empleado.salida) {
-            estado = "SALIDA-ANTICIPADA";
+
+        if (esEntrada) {
+            const [horaE, minE] = empleado.entrada.split(':').map(Number);
+            const limite = (horaE * 60) + minE + 30; // Tolerancia aplicada
+            if (minutosActuales > limite) estado = "RETARDO";
+        } else {
+            const [horaS, minS] = empleado.salida.split(':').map(Number);
+            const limiteSalida = (horaS * 60) + minS;
+            if (minutosActuales < limiteSalida) estado = "SALIDA-ANTICIPADA";
         }
 
         const registro = {
             id: empleado.id,
-            nombre: empleado.nombre, // Enviamos el nombre también
-            hora: ahora.toLocaleTimeString(),
+            nombre: empleado.nombre,
+            hora: ahora.toLocaleTimeString('es-MX'),
             tipo: tipo,
             estado: estado
         };
 
         console.log('Simulado:', registro);
-
-        // 4. Enviar al navegador
         io.emit('nueva-checada', registro);
 
     }, 10000);

@@ -3,7 +3,7 @@ import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
 import path from 'path';
-import fs from 'fs'; // Importado para leer horarios.json
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -13,14 +13,13 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
-// --- CARGA DE BASE DE DATOS ---
 const rutaHorarios = path.join(__dirname, 'horarios.json');
 let empleados = [];
 
 try {
     const data = fs.readFileSync(rutaHorarios, 'utf8');
     empleados = JSON.parse(data);
-    console.log(`✅ Base de datos cargada: ${empleados.length} empleados listos.`);
+    console.log(`✅ Base de datos cargada: ${empleados.length} empleados.`);
 } catch (err) {
     console.error("❌ Error al leer horarios.json:", err);
 }
@@ -30,7 +29,6 @@ app.get('/', (req, res) => {
 });
 
 async function iniciarReloj() {
-    // IP de tu CLK-960
     let zkInstance = new ZKLib('192.168.0.124', 4370, 10000, 4000);
     
     try {
@@ -38,45 +36,50 @@ async function iniciarReloj() {
         console.log('✅ Reloj Conectado');
 
         zkInstance.getRealTimeLogs((data) => {
-            const idDetectado = parseInt(data.userId); // El ID que viene del reloj
+            const idDetectado = parseInt(data.userId);
             const ahora = new Date();
-            const horaActualStr = ahora.getHours().toString().padStart(2, '0') + ":" + 
-                                  ahora.getMinutes().toString().padStart(2, '0');
             
-            // Buscar al empleado en nuestro JSON
+            // Convertimos la hora actual a minutos totales del día para facilitar cálculos
+            const minutosActuales = (ahora.getHours() * 60) + ahora.getMinutes();
+            
             const empleado = empleados.find(e => e.id === idDetectado);
 
             if (empleado) {
-                // Lógica de validación (Entrada o Salida)
-                // Si la hora actual es antes de mediodía, asumimos ENTRADA, después SALIDA
-                const esEntrada = ahora.getHours() < 13; 
+                // Definimos si es ENTRADA (antes de la 1 PM / 13:00 hrs)
+                const esEntrada = ahora.getHours() < 13;
                 const tipo = esEntrada ? 'ENTRADA' : 'SALIDA';
-                
                 let estado = "A TIEMPO";
-                if (esEntrada && horaActualStr > empleado.entrada) {
-                    estado = "RETARDO";
-                } else if (!esEntrada && horaActualStr < empleado.salida) {
-                    estado = "SALIDA-ANTICIPADA";
+
+                if (esEntrada) {
+                    // Lógica de Tolerancia: 30 minutos
+                    const [horaE, minE] = empleado.entrada.split(':').map(Number);
+                    const minutosEntradaPermitidos = (horaE * 60) + minE + 30;
+
+                    if (minutosActuales > minutosEntradaPermitidos) {
+                        estado = "REGISTRO INVÁLIDO, superaste la tolerancia de entrada de 30 minutos.";
+                    } 
+                } else {
+                    // Lógica de Salida Anticipada
+                    const [horaS, minS] = empleado.salida.split(':').map(Number);
+                    const minutosSalidaLey = (horaS * 60) + minS;
+
+                    if (minutosActuales < minutosSalidaLey) {
+                        estado = "SALIDA-ANTICIPADA";
+                    }
                 }
 
                 const registro = {
                     id: empleado.id,
                     nombre: empleado.nombre,
-                    hora: ahora.toLocaleTimeString(),
+                    hora: ahora.toLocaleTimeString('es-MX'),
                     tipo: tipo,
                     estado: estado
                 };
 
-                console.log('Registro Real:', registro);
-                io.emit('nueva-checada', registro); // Enviamos todo al navegador
+                console.log('Registro procesado:', registro);
+                io.emit('nueva-checada', registro);
             } else {
-                console.log(`⚠️ ID ${idDetectado} no encontrado en horarios.json`);
-                io.emit('nueva-checada', { 
-                    id: idDetectado, 
-                    nombre: "DESCONOCIDO", 
-                    hora: ahora.toLocaleTimeString(),
-                    estado: "ERROR-ID" 
-                });
+                console.log(`⚠️ ID ${idDetectado} no reconocido.`);
             }
         });
     } catch (e) {
@@ -86,6 +89,6 @@ async function iniciarReloj() {
 }
 
 server.listen(3000, () => {
-    console.log('🌐 Servidor unificado en: http://localhost:3000');
+    console.log('🌐 Servidor con tolerancia de 30 min en: http://localhost:3000');
     iniciarReloj();
 });
