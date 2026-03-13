@@ -3,23 +3,28 @@ import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
 import path from 'path';
+import fs from 'fs'; // Importado para leer horarios.json
 import { fileURLToPath } from 'url';
 
-// Para que __dirname funcione en modo "module"
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 const server = http.createServer(app);
+const io = new Server(server, { cors: { origin: "*" } });
 
-// Configuración de Socket.io con CORS corregido
-const io = new Server(server, { 
-    cors: { 
-        origin: "*" 
-    } 
-});
+// --- CARGA DE BASE DE DATOS ---
+const rutaHorarios = path.join(__dirname, 'horarios.json');
+let empleados = [];
 
-// Servir la página web corregido con la flecha =>
+try {
+    const data = fs.readFileSync(rutaHorarios, 'utf8');
+    empleados = JSON.parse(data);
+    console.log(`✅ Base de datos cargada: ${empleados.length} empleados listos.`);
+} catch (err) {
+    console.error("❌ Error al leer horarios.json:", err);
+}
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -32,24 +37,55 @@ async function iniciarReloj() {
         await zkInstance.createSocket();
         console.log('✅ Reloj Conectado');
 
-        // Escuchar eventos en tiempo real con la flecha => corregida
         zkInstance.getRealTimeLogs((data) => {
-            console.log('Huella detectada:', data.userId);
+            const idDetectado = parseInt(data.userId); // El ID que viene del reloj
+            const ahora = new Date();
+            const horaActualStr = ahora.getHours().toString().padStart(2, '0') + ":" + 
+                                  ahora.getMinutes().toString().padStart(2, '0');
             
-            // ENVIAR AL NAVEGADOR (corregido con : para los objetos)
-            io.emit('nueva-checada', { 
-                id: data.userId, 
-                hora: new Date().toLocaleTimeString() 
-            });
+            // Buscar al empleado en nuestro JSON
+            const empleado = empleados.find(e => e.id === idDetectado);
+
+            if (empleado) {
+                // Lógica de validación (Entrada o Salida)
+                // Si la hora actual es antes de mediodía, asumimos ENTRADA, después SALIDA
+                const esEntrada = ahora.getHours() < 13; 
+                const tipo = esEntrada ? 'ENTRADA' : 'SALIDA';
+                
+                let estado = "A TIEMPO";
+                if (esEntrada && horaActualStr > empleado.entrada) {
+                    estado = "RETARDO";
+                } else if (!esEntrada && horaActualStr < empleado.salida) {
+                    estado = "SALIDA-ANTICIPADA";
+                }
+
+                const registro = {
+                    id: empleado.id,
+                    nombre: empleado.nombre,
+                    hora: ahora.toLocaleTimeString(),
+                    tipo: tipo,
+                    estado: estado
+                };
+
+                console.log('Registro Real:', registro);
+                io.emit('nueva-checada', registro); // Enviamos todo al navegador
+            } else {
+                console.log(`⚠️ ID ${idDetectado} no encontrado en horarios.json`);
+                io.emit('nueva-checada', { 
+                    id: idDetectado, 
+                    nombre: "DESCONOCIDO", 
+                    hora: ahora.toLocaleTimeString(),
+                    estado: "ERROR-ID" 
+                });
+            }
         });
     } catch (e) {
         console.log('Error Reloj:', e.message);
-        setTimeout(iniciarReloj, 5000); // Reintentar si falla
+        setTimeout(iniciarReloj, 5000);
     }
 }
 
-// Iniciar servidor en el puerto 3000
 server.listen(3000, () => {
-    console.log('🌐 Servidor web listo en: http://localhost:3000');
+    console.log('🌐 Servidor unificado en: http://localhost:3000');
     iniciarReloj();
 });

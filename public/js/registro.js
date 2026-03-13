@@ -61,7 +61,7 @@ socket.on("nueva-checada", (data) => {
         pantallaResultado.classList.add("hidden");
         pantallaEspera.classList.remove("hidden");
         bloqueado = false;
-    }, 5000);
+    }, 8000);
 });
 
 // Loader UI

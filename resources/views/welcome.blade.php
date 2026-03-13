@@ -112,5 +112,5 @@
     </body>
     
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script src="{{ asset('js/registro.js?v1.1') }}"></script>
+    <script src="{{ asset('js/registro.js?v1.2') }}"></script>
 </html>
