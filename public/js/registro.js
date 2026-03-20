@@ -28,6 +28,16 @@ socket.on("disconnect", () => {
     estadoConexion.className = "text-sm font-semibold px-3 py-1 rounded-full bg-red-200 text-red-800 inline-block";
 });
 
+socket.on("estado-reloj", (data) => {
+    if (data.conectado) {
+        estadoReloj.textContent = "Reloj: En línea";
+        estadoReloj.className = "text-xs font-medium px-2 py-0.5 rounded-full bg-green-200 text-green-800";
+    } else {
+        estadoReloj.textContent = "Reloj: Desconectado / Reintentando";
+        estadoReloj.className = "text-xs font-medium px-2 py-0.5 rounded-full bg-red-200 text-red-800 animate-pulse";
+    }
+});s
+
 socket.on("nueva-checada", (data) => {
     if (bloqueado) return;
     bloqueado = true;
@@ -64,15 +74,6 @@ socket.on("nueva-checada", (data) => {
     }, 10000);
 });
 
-socket.on("estado-reloj", (data) => {
-    if (data.conectado) {
-        estadoReloj.textContent = "Reloj: En línea";
-        estadoReloj.className = "text-xs font-medium px-2 py-0.5 rounded-full bg-green-200 text-green-800";
-    } else {
-        estadoReloj.textContent = "Reloj: Desconectado / Reintentando";
-        estadoReloj.className = "text-xs font-medium px-2 py-0.5 rounded-full bg-red-200 text-red-800 animate-pulse";
-    }
-});
 
 // Funciones de Reloj y Loader (mantener igual...)
 function actualizarReloj() {
