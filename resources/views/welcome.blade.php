@@ -16,15 +16,19 @@
             <source src="https://actions.google.com/sounds/v1/emergency/beeper_emergency_call.ogg" type="audio/ogg">
         </audio>
         <!-- BARRA SUPERIOR CON RELOJ -->
-        <div class="max-w-6xl mx-auto px-6 flex justify-between items-center text-sm">
-            <div class="flex items-center space-x-4">
-                <span class="tracking-wide">Sistema de Registro de Asistencia</span>
-                <span id="estadoReloj" class="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-200 text-gray-800">
-                    Sincronizando reloj...
-                </span>
-            </div>
-            
-        </div>
+<div class="max-w-6xl mx-auto px-6 flex justify-between items-center text-sm py-2">
+    <div class="flex items-center space-x-4">
+        <span class="tracking-wide">Sistema de Registro de Asistencia</span>
+        
+        <span id="estadoConexion" class="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-200 text-gray-800">
+            Conectando...
+        </span>
+
+        <span id="estadoReloj" class="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-200 text-gray-800">
+            Sincronizando reloj...
+        </span>
+    </div>
+</div>
         <!-- HEADER -->
         <header class="bg-white border-b shadow-sm">
             <div class="max-w-6xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
@@ -92,6 +96,7 @@
         </main>
         <footer class="bg-ipn-guinda text-white text-center py-4 text-sm tracking-wide mt-auto">
             © 2026 Instituto Politécnico Nacional
+            <br>
             Powered by Albert String
         </footer>
     </body>

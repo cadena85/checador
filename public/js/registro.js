@@ -19,13 +19,17 @@ const audioAlerta = document.getElementById("audioAlerta");
 let bloqueado = false;
 
 socket.on("connect", () => {
-    estadoConexion.textContent = "En línea";
-    estadoConexion.className = "text-sm font-semibold px-3 py-1 rounded-full bg-green-200 text-green-800 inline-block";
+    if (estadoConexion) {
+        estadoConexion.textContent = "Servidor: En línea";
+        estadoConexion.className = "text-xs font-medium px-2 py-0.5 rounded-full bg-green-200 text-green-800 inline-block";
+    }
 });
 
 socket.on("disconnect", () => {
-    estadoConexion.textContent = "Sin conexión";
-    estadoConexion.className = "text-sm font-semibold px-3 py-1 rounded-full bg-red-200 text-red-800 inline-block";
+    if (estadoConexion) {
+        estadoConexion.textContent = "Servidor: Sin conexión";
+        estadoConexion.className = "text-xs font-medium px-2 py-0.5 rounded-full bg-red-200 text-red-800 inline-block";
+    }
 });
 
 socket.on("estado-reloj", (data) => {
