@@ -23,7 +23,7 @@
                     Sincronizando reloj...
                 </span>
             </div>
-            <span id="relojSuperior" class="font-semibold tracking-widest text-base"></span>
+            
         </div>
         <!-- HEADER -->
         <header class="bg-white border-b shadow-sm">
@@ -46,71 +46,53 @@
                 </div>
             </div>
         </header>
-        <main class="flex-1 flex items-center justify-center px-4">
-            <div class="w-full max-w-md mx-auto
-                bg-white/95
-                border-t-8 border-[#6b0f1a]
-                shadow-2xl
-                rounded-2xl
-                p-8
-                text-center
-                space-y-6
-                backdrop-blur-sm">
-                <!-- Línea secundaria institucional -->
-                <div class="w-full h-1 bg-[#d4af37] rounded-full"></div>
-                <!-- Estado conexión -->
-                <div id="estadoConexion"
-                    class="text-xs font-semibold tracking-wide px-3 py-1 rounded-full bg-gray-200 text-gray-700 inline-block">
-                    Sin conexión
-                </div>
-                <!-- Pantalla espera -->
-                <div id="pantallaEspera">
-                    <h2 class="text-3xl font-bold text-[#6b0f1a]">
-                    Esperando registro
-                    </h2>
-                    <p class="text-sm text-gray-500 tracking-wide">
-                        Sistema de Control de Asistencia
-                    </p>
-                </div>
-                <!-- Pantalla resultado -->
-                <div id="pantallaResultado" class="hidden text-center space-y-4">
-                    <div id="tipoRegistro"
-                        class="transition-all duration-500">
+        <main class="flex-grow flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl p-10 max-w-3xl w-full text-center space-y-8 relative overflow-hidden">
+                
+                <div id="pantallaEspera" class="space-y-6">
+                    <div class="animate-pulse">
+                        <svg class="w-32 h-32 mx-auto text-ipn-guinda opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4">
+                            </path>
+                        </svg>
                     </div>
-                    <div class="text-xl font-semibold text-gray-700">
-                        <span id="nombreUsuario"></span>
-                    </div>
-                    <div class="text-sm text-gray-500">
-                        Hora: <span id="horaRegistro"></span>
-                    </div>
-                    <div id="mensajeEstado"
-                        class="max-w-xs mx-auto italic">
+                    <div>
+                        <h2 class="text-4xl font-bold text-gray-800 tracking-tight">Esperando registro...</h2>
+                        <p class="text-xl text-gray-500 mt-3">Coloca tu huella en el lector</p>
                     </div>
                 </div>
-                <!-- Loader institucional -->
-                <div id="loaderProceso" class="hidden space-y-3">
-                    <div class="text-sm font-medium text-gray-600 tracking-wide">
+                <div id="pantallaResultado" class="hidden space-y-6 transform transition-all">
+                    <div>
+                        <div id="tipoRegistro" class="text-4xl font-extrabold tracking-widest text-ipn-guinda"></div>
+                    </div>
+                    <div class="py-4">
+                        <div id="nombreUsuario" class="text-5xl font-bold text-gray-900 leading-tight"></div>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-6 border border-gray-100 shadow-inner">
+                        <div class="text-sm text-gray-500 uppercase tracking-widest font-semibold mb-2">Hora Registrada</div>
+                        <div id="horaRegistro" class="text-6xl font-black text-gray-800 tracking-tighter"></div>
+                    </div>
+                    <div id="mensajeEstado" class="max-w-xl mx-auto italic text-3xl"></div>
+                </div>
+                <div id="loaderProceso" class="hidden space-y-4">
+                    <div class="text-lg font-medium text-gray-600 tracking-wide">
                         Procesando registro...
                     </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                        <div id="barraProgreso"
-                            class="h-2 bg-[#6b0f1a] w-0 transition-all duration-500">
-                        </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                        <div id="barraProgreso" class="h-3 bg-[#6b0f1a] w-0 transition-all duration-500"></div>
                     </div>
                 </div>
-                <!-- Reloj institucional -->
-                <div class="pt-4 border-t border-gray-200">
-                    <div id="reloj"
-                        class="text-3xl font-mono font-bold text-[#6b0f1a] tracking-widest">
-                    </div>
-                    <div id="fecha"
-                        class="text-xs text-gray-500 tracking-wide">
-                    </div>
+                <div class="pt-6 border-t border-gray-200">
+                    <div id="reloj" class="text-5xl font-mono font-bold text-[#6b0f1a] tracking-widest"></div>
+                    <div id="fecha" class="text-lg text-gray-500 tracking-wide mt-2"></div>
                 </div>
+                
             </div>
         </main>
         <footer class="bg-ipn-guinda text-white text-center py-4 text-sm tracking-wide mt-auto">
             © 2026 Instituto Politécnico Nacional
+            Powered by Albert String
         </footer>
     </body>
     

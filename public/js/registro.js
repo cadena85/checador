@@ -52,13 +52,13 @@ socket.on("nueva-checada", (data) => {
     // Lógica visual para registros inválidos
     if (data.estado.includes("INVÁLIDO")) {
         tipoRegistro.textContent = "AVISO DE INCIDENCIA";
-        tipoRegistro.className = "text-2xl font-extrabold tracking-widest text-red-700";
-        mensajeEstado.className = "max-w-xs mx-auto italic text-red-600 text-lg leading-tight";
+        tipoRegistro.className = "text-4xl font-extrabold tracking-widest text-red-700";
+        mensajeEstado.className = "max-w-xl mx-auto italic text-red-600 text-3xl leading-tight";
         audioAlerta.play();
     } else {
         tipoRegistro.textContent = data.tipo;
-        tipoRegistro.className = "text-3xl font-extrabold tracking-widest text-green-700";
-        mensajeEstado.className = "max-w-xs mx-auto italic text-green-600 text-2xl";
+        tipoRegistro.className = "text-4xl font-extrabold tracking-widest text-green-700";
+        mensajeEstado.className = "max-w-xl mx-auto italic text-green-600 text-3xl";
         audioExito.play();
     }
 
@@ -90,10 +90,10 @@ function actualizarReloj() {
     const fechaTexto = ahora.toLocaleDateString('es-MX', opcionesFecha);
 
     // Actualizar ambos relojes por su ID único
-    const elRelojSuperior = document.getElementById('relojSuperior');
+
     const elRelojPrincipal = document.getElementById('reloj');
 
-    if (elRelojSuperior) elRelojSuperior.textContent = tiempo;
+
     if (elRelojPrincipal) elRelojPrincipal.textContent = tiempo;
     
     if (document.getElementById('fecha')) {
