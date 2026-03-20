@@ -16,6 +16,16 @@ const io = new Server(server, { cors: { origin: "*" } });
 const rutaHorarios = path.join(__dirname, 'horarios.json');
 let empleados = [];
 
+// Variables globales para el temporizador y el socket
+let temporizadorReinicio = null;
+let zkInstance = null;
+let relojConectado = false;
+
+// Cuando la página web se abre o recarga, le enviamos el estado actual
+io.on('connection', (socket) => {
+    socket.emit('estado-reloj', { conectado: relojConectado });
+});
+
 try {
     const data = fs.readFileSync(rutaHorarios, 'utf8');
     empleados = JSON.parse(data);
@@ -28,9 +38,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Variables globales para el temporizador y el socket
-let temporizadorReinicio = null;
-let zkInstance = null;
+
 
 async function iniciarReloj() {
     // 1. Limpieza profunda antes de conectar
@@ -45,6 +53,7 @@ async function iniciarReloj() {
     try {
         await zkInstance.createSocket();
         console.log('✅ Reloj Conectado');
+        relojConectado = true; 
         io.emit('estado-reloj', { conectado: true });
 
         // 2. Escuchar huellas con tu lógica de negocio
@@ -101,6 +110,7 @@ async function iniciarReloj() {
     } catch (e) {
         const mensajeError = (e && e.message) ? e.message : "Error de conexión";
         console.log(`❌ Error Reloj: ${mensajeError}`);
+        relojConectado = false;
         io.emit('estado-reloj', { conectado: false });
 
         if (temporizadorReinicio) clearTimeout(temporizadorReinicio);
