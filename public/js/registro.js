@@ -10,6 +10,7 @@ const nombreUsuario = document.getElementById("nombreUsuario"); // DEFINIDO
 const horaRegistroSpan = document.getElementById("horaRegistro");
 const mensajeEstado = document.getElementById("mensajeEstado");
 const tipoRegistro = document.getElementById("tipoRegistro");
+const estadoReloj = document.getElementById("estadoReloj");
 
 // Audios
 const audioExito = document.getElementById("audioExito");
@@ -61,6 +62,16 @@ socket.on("nueva-checada", (data) => {
         pantallaEspera.classList.remove("hidden");
         bloqueado = false;
     }, 10000);
+});
+
+socket.on("estado-reloj", (data) => {
+    if (data.conectado) {
+        estadoReloj.textContent = "Reloj: En línea";
+        estadoReloj.className = "text-xs font-medium px-2 py-0.5 rounded-full bg-green-200 text-green-800";
+    } else {
+        estadoReloj.textContent = "Reloj: Desconectado / Reintentando";
+        estadoReloj.className = "text-xs font-medium px-2 py-0.5 rounded-full bg-red-200 text-red-800 animate-pulse";
+    }
 });
 
 // Funciones de Reloj y Loader (mantener igual...)

@@ -78,8 +78,13 @@ async function iniciarReloj() {
             }
         });
     } catch (e) {
-        const errorMsg = e && e.message ? e.message : "Error de conexión";
-        console.log(`❌ Error Reloj: ${errorMsg}`);
+        const mensajeError = (e && e.message) ? e.message : "Error de conexión";
+        console.log(`❌ Error Reloj: ${mensajeError}`);
+
+        // AVISAR A LA WEB: Reloj desconectado
+        io.emit('estado-reloj', { conectado: false });
+
+        try { await zkInstance.disconnect(); } catch (err) {}
         setTimeout(iniciarReloj, 5000);
     }
 }

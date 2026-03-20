@@ -16,12 +16,14 @@
             <source src="https://actions.google.com/sounds/v1/emergency/beeper_emergency_call.ogg" type="audio/ogg">
         </audio>
         <!-- BARRA SUPERIOR CON RELOJ -->
-        <div class="bg-ipn-guinda text-white py-2">
-            <div class="max-w-6xl mx-auto px-6 flex justify-between items-center text-sm">
+        <div class="max-w-6xl mx-auto px-6 flex justify-between items-center text-sm">
+            <div class="flex items-center space-x-4">
                 <span class="tracking-wide">Sistema de Registro de Asistencia</span>
-                <span id="relojSuperior" class="font-semibold tracking-widest text-base"></span>
-                <!--<span id="reloj" class="font-semibold tracking-widest text-base"></span>-->
+                <span id="estadoReloj" class="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-200 text-gray-800">
+                    Sincronizando reloj...
+                </span>
             </div>
+            <span id="relojSuperior" class="font-semibold tracking-widest text-base"></span>
         </div>
         <!-- HEADER -->
         <header class="bg-white border-b shadow-sm">
