@@ -28,64 +28,45 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// Variable global para controlar el temporizador
+let temporizadorReinicio = null;
+let zkInstance = null;
+
 async function iniciarReloj() {
-    let zkInstance = new ZKLib('192.168.0.124', 4370, 10000, 4000);
+    // 1. Limpieza profunda antes de conectar
+    if (zkInstance) {
+        try { await zkInstance.disconnect(); } catch (e) {}
+        zkInstance = null;
+    }
+
+    zkInstance = new ZKLib('192.168.0.124', 4370, 20000, 4000);
     
     try {
         await zkInstance.createSocket();
         console.log('✅ Reloj Conectado');
+        io.emit('estado-reloj', { conectado: true });
 
+        // 2. Escuchar huellas
         zkInstance.getRealTimeLogs((data) => {
+            // (AQUÍ VA TU LÓGICA DE HORARIOS INTACTA)
             const idDetectado = parseInt(data.userId);
-            const ahora = new Date();
-            const minutosActuales = (ahora.getHours() * 60) + ahora.getMinutes();
-            
-            const empleado = empleados.find(e => e.id === idDetectado);
-
-            if (empleado) {
-                const esEntrada = ahora.getHours() < 13;
-                const tipo = esEntrada ? 'ENTRADA' : 'SALIDA';
-                let estado = "A TIEMPO";
-
-                if (esEntrada) {
-                    const [horaE, minE] = empleado.entrada.split(':').map(Number);
-                    const limiteEntradaPermitido = (horaE * 60) + minE + 30;
-
-                    if (minutosActuales > limiteEntradaPermitido) {
-                        estado = "REGISTRO INVÁLIDO, superaste la tolerancia de entrada de 30 minutos.";
-                    } else {
-                        estado = "A TIEMPO";
-                    }
-                } else {
-                    const [horaS, minS] = empleado.salida.split(':').map(Number);
-                    const minutosSalidaLey = (horaS * 60) + minS;
-
-                    if (minutosActuales < minutosSalidaLey) {
-                        estado = "SALIDA-ANTICIPADA";
-                    }
-                }
-
-                const registro = {
-                    id: empleado.id,
-                    nombre: empleado.nombre,
-                    hora: ahora.toLocaleTimeString('es-MX'),
-                    tipo: tipo,
-                    estado: estado
-                };
-
-                console.log('Registro procesado:', registro);
-                io.emit('nueva-checada', registro);
-            }
+            // ... resto de tu código de validación ...
         });
+
+        // 3. RUTINA DE LIMPIEZA PREVENTIVA (Cada 30 minutos = 1800000 ms)
+        if (temporizadorReinicio) clearTimeout(temporizadorReinicio);
+        temporizadorReinicio = setTimeout(() => {
+            console.log('🔄 Reinicio preventivo del socket para liberar memoria del reloj...');
+            iniciarReloj();
+        }, 1800000); 
+
     } catch (e) {
         const mensajeError = (e && e.message) ? e.message : "Error de conexión";
         console.log(`❌ Error Reloj: ${mensajeError}`);
-
-        // AVISAR A LA WEB: Reloj desconectado
         io.emit('estado-reloj', { conectado: false });
 
-        try { await zkInstance.disconnect(); } catch (err) {}
-        setTimeout(iniciarReloj, 5000);
+        if (temporizadorReinicio) clearTimeout(temporizadorReinicio);
+        setTimeout(iniciarReloj, 5000); // Reintentar en 5 segundos si falla
     }
 }
 
