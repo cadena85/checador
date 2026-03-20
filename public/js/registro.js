@@ -36,7 +36,7 @@ socket.on("estado-reloj", (data) => {
         estadoReloj.textContent = "Reloj: Desconectado / Reintentando";
         estadoReloj.className = "text-xs font-medium px-2 py-0.5 rounded-full bg-red-200 text-red-800 animate-pulse";
     }
-});s
+});
 
 socket.on("nueva-checada", (data) => {
     if (bloqueado) return;
