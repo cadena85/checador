@@ -38,28 +38,25 @@ async function iniciarReloj() {
         zkInstance.getRealTimeLogs((data) => {
             const idDetectado = parseInt(data.userId);
             const ahora = new Date();
-            
-            // Convertimos la hora actual a minutos totales del día para facilitar cálculos
             const minutosActuales = (ahora.getHours() * 60) + ahora.getMinutes();
             
             const empleado = empleados.find(e => e.id === idDetectado);
 
             if (empleado) {
-                // Definimos si es ENTRADA (antes de la 1 PM / 13:00 hrs)
                 const esEntrada = ahora.getHours() < 13;
                 const tipo = esEntrada ? 'ENTRADA' : 'SALIDA';
                 let estado = "A TIEMPO";
 
                 if (esEntrada) {
-                    // Lógica de Tolerancia: 30 minutos
                     const [horaE, minE] = empleado.entrada.split(':').map(Number);
-                    const minutosEntradaPermitidos = (horaE * 60) + minE + 30;
+                    const limiteEntradaPermitido = (horaE * 60) + minE + 30;
 
-                    if (minutosActuales > minutosEntradaPermitidos) {
+                    if (minutosActuales > limiteEntradaPermitido) {
                         estado = "REGISTRO INVÁLIDO, superaste la tolerancia de entrada de 30 minutos.";
-                    } 
+                    } else {
+                        estado = "A TIEMPO";
+                    }
                 } else {
-                    // Lógica de Salida Anticipada
                     const [horaS, minS] = empleado.salida.split(':').map(Number);
                     const minutosSalidaLey = (horaS * 60) + minS;
 
@@ -78,17 +75,16 @@ async function iniciarReloj() {
 
                 console.log('Registro procesado:', registro);
                 io.emit('nueva-checada', registro);
-            } else {
-                console.log(`⚠️ ID ${idDetectado} no reconocido.`);
             }
         });
     } catch (e) {
-        console.log('Error Reloj:', e.message);
+        const errorMsg = e && e.message ? e.message : "Error de conexión";
+        console.log(`❌ Error Reloj: ${errorMsg}`);
         setTimeout(iniciarReloj, 5000);
     }
 }
 
 server.listen(3000, () => {
-    console.log('🌐 Servidor con tolerancia de 30 min en: http://localhost:3000');
+    console.log('🌐 Servidor en puerto 3000');
     iniciarReloj();
 });

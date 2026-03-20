@@ -19,7 +19,8 @@
         <div class="bg-ipn-guinda text-white py-2">
             <div class="max-w-6xl mx-auto px-6 flex justify-between items-center text-sm">
                 <span class="tracking-wide">Sistema de Registro de Asistencia</span>
-                <span id="reloj" class="font-semibold tracking-widest text-base"></span>
+                <span id="relojSuperior" class="font-semibold tracking-widest text-base"></span>
+                <!--<span id="reloj" class="font-semibold tracking-widest text-base"></span>-->
             </div>
         </div>
         <!-- HEADER -->

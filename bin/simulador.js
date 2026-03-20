@@ -12,6 +12,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
+// 1. Cargar la base de datos de empleados
 const rutaHorarios = path.join(__dirname, 'horarios.json');
 let empleados = [];
 
@@ -24,11 +25,12 @@ try {
 }
 
 function iniciarSimulador() {
-    console.log('🧪 Simulador con Tolerancia de 30 min Activo (10s)');
+    console.log('🧪 Simulador Activo: Probando tolerancia de 30 min y mensajes largos.');
 
     setInterval(() => {
         if (empleados.length === 0) return;
 
+        // Seleccionar empleado aleatorio
         const empleado = empleados[Math.floor(Math.random() * empleados.length)];
         const ahora = new Date();
         
@@ -36,18 +38,25 @@ function iniciarSimulador() {
         const esEntrada = Math.random() > 0.5;
         const tipo = esEntrada ? 'ENTRADA' : 'SALIDA';
         
-        // Lógica de validación con minutos
+        // Lógica de minutos totales del día para precisión
         const minutosActuales = (ahora.getHours() * 60) + ahora.getMinutes();
         let estado = "A TIEMPO";
 
         if (esEntrada) {
             const [horaE, minE] = empleado.entrada.split(':').map(Number);
-            const limite = (horaE * 60) + minE + 30; // Tolerancia aplicada
-            if (minutosActuales > limite) estado = "RETARDO";
+            const limiteTolerancia = (horaE * 60) + minE + 30; // 30 minutos de gracia
+
+            if (minutosActuales > limiteTolerancia) {
+                // Mensaje largo personalizado
+                estado = "REGISTRO INVÁLIDO, superaste la tolerancia de entrada de 30 minutos.";
+            }
         } else {
             const [horaS, minS] = empleado.salida.split(':').map(Number);
-            const limiteSalida = (horaS * 60) + minS;
-            if (minutosActuales < limiteSalida) estado = "SALIDA-ANTICIPADA";
+            const minutosSalidaLey = (horaS * 60) + minS;
+
+            if (minutosActuales < minutosSalidaLey) {
+                estado = "SALIDA-ANTICIPADA";
+            }
         }
 
         const registro = {
@@ -59,9 +68,11 @@ function iniciarSimulador() {
         };
 
         console.log('Simulado:', registro);
+
+        // Enviar al navegador vía Socket.io
         io.emit('nueva-checada', registro);
 
-    }, 10000);
+    }, 10000); // Se ejecuta cada 10 segundos
 }
 
 server.listen(3000, () => {
