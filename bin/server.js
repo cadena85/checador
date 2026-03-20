@@ -39,7 +39,7 @@ async function iniciarReloj() {
         zkInstance = null;
     }
 
-    zkInstance = new ZKLib('192.168.0.124', 4370, 20000, 4000);
+    zkInstance = new ZKLib('192.168.0.240', 4370, 20000, 4000);
     
     try {
         await zkInstance.createSocket();
