@@ -28,7 +28,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Variable global para controlar el temporizador
+// Variables globales para el temporizador y el socket
 let temporizadorReinicio = null;
 let zkInstance = null;
 
@@ -39,6 +39,7 @@ async function iniciarReloj() {
         zkInstance = null;
     }
 
+    // IP actualizada a .240 y timeout aumentado a 20000
     zkInstance = new ZKLib('192.168.0.240', 4370, 20000, 4000);
     
     try {
@@ -46,14 +47,51 @@ async function iniciarReloj() {
         console.log('✅ Reloj Conectado');
         io.emit('estado-reloj', { conectado: true });
 
-        // 2. Escuchar huellas
+        // 2. Escuchar huellas con tu lógica de negocio
         zkInstance.getRealTimeLogs((data) => {
-            // (AQUÍ VA TU LÓGICA DE HORARIOS INTACTA)
             const idDetectado = parseInt(data.userId);
-            // ... resto de tu código de validación ...
+            const ahora = new Date();
+            const minutosActuales = (ahora.getHours() * 60) + ahora.getMinutes();
+            
+            const empleado = empleados.find(e => e.id === idDetectado);
+
+            if (empleado) {
+                const esEntrada = ahora.getHours() < 13;
+                const tipo = esEntrada ? 'ENTRADA' : 'SALIDA';
+                let estado = "A TIEMPO";
+
+                if (esEntrada) {
+                    const [horaE, minE] = empleado.entrada.split(':').map(Number);
+                    const limiteEntradaPermitido = (horaE * 60) + minE + 30;
+
+                    if (minutosActuales > limiteEntradaPermitido) {
+                        estado = "REGISTRO INVÁLIDO, superaste la tolerancia de entrada de 30 minutos.";
+                    } else {
+                        estado = "A TIEMPO";
+                    }
+                } else {
+                    const [horaS, minS] = empleado.salida.split(':').map(Number);
+                    const minutosSalidaLey = (horaS * 60) + minS;
+
+                    if (minutosActuales < minutosSalidaLey) {
+                        estado = "SALIDA-ANTICIPADA";
+                    }
+                }
+
+                const registro = {
+                    id: empleado.id,
+                    nombre: empleado.nombre,
+                    hora: ahora.toLocaleTimeString('es-MX'),
+                    tipo: tipo,
+                    estado: estado
+                };
+
+                console.log('Registro procesado:', registro);
+                io.emit('nueva-checada', registro);
+            }
         });
 
-        // 3. RUTINA DE LIMPIEZA PREVENTIVA (Cada 30 minutos = 1800000 ms)
+        // 3. RUTINA DE LIMPIEZA PREVENTIVA (Cada 30 min)
         if (temporizadorReinicio) clearTimeout(temporizadorReinicio);
         temporizadorReinicio = setTimeout(() => {
             console.log('🔄 Reinicio preventivo del socket para liberar memoria del reloj...');
@@ -66,7 +104,7 @@ async function iniciarReloj() {
         io.emit('estado-reloj', { conectado: false });
 
         if (temporizadorReinicio) clearTimeout(temporizadorReinicio);
-        setTimeout(iniciarReloj, 5000); // Reintentar en 5 segundos si falla
+        setTimeout(iniciarReloj, 5000); 
     }
 }
 
