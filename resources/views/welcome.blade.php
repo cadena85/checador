@@ -27,16 +27,21 @@
         background-color: #e74c3c !important; /* Rojo si falla */
         opacity: 1;
     }
+    .ping-flash {
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.8);
+    transition: box-shadow 0.3s ease-in-out;
+    }
 </style>
     </head>
     <body class="bg-ipn-fondo font-sans min-h-screen flex flex-col">
-        <div id="indicador-ping" title="Estado del Reloj"></div>
+        
         <audio id="audioExito" preload="auto">
             <source src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" type="audio/ogg">
         </audio>
         <audio id="audioAlerta" preload="auto">
             <source src="https://actions.google.com/sounds/v1/emergency/beeper_emergency_call.ogg" type="audio/ogg">
         </audio>
+        <div id="indicador-ping" title="Estado del Reloj"></div>
         <!-- BARRA SUPERIOR CON RELOJ -->
 <div class="max-w-6xl mx-auto px-6 flex justify-between items-center text-sm py-2">
     <div class="flex items-center space-x-4">
@@ -137,5 +142,5 @@
     </body>
     
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script src="{{ asset('js/registro.js?v1.2') }}"></script>
+    <script src="{{ asset('js/registro.js?v2.0') }}"></script>
 </html>

@@ -162,7 +162,7 @@ socket.on("historial-inicial", (historial) => {
 });
 
 const indicador = document.getElementById('indicador-ping');
-
+/*
 socket.on('ping-status', (data) => {
     if (data.success) {
         indicador.classList.remove('error-ping');
@@ -171,5 +171,16 @@ socket.on('ping-status', (data) => {
         setTimeout(() => indicador.classList.remove('latido'), 500);
     } else {
         indicador.classList.add('error-ping');
+    }
+});
+*/
+// Busca esto al final de registro.js y corrígelo:
+socket.on('ping-status', (data) => {
+    // Cambiamos 'tu-contenedor-principal' por el div que contiene la tarjeta blanca
+    const tarjeta = document.querySelector('.bg-white.rounded-2xl.shadow-2xl'); 
+    
+    if (data.success && tarjeta) {
+        tarjeta.classList.add('ping-flash');
+        setTimeout(() => tarjeta.classList.remove('ping-flash'), 400);
     }
 });

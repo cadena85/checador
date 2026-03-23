@@ -134,7 +134,7 @@ server.listen(3000, () => {
 // --- RUTINA KEEP-ALIVE (Mantener Wi-Fi del reloj despierto) ---
 // Define el comando correcto según tu sistema operativo (Windows o Linux/Mac)
 const comandoPing = os.platform() === 'win32' ? 'ping -n 1 192.168.0.240' : 'ping -c 1 192.168.0.240';
-
+/*
 setInterval(() => {
     exec(comandoPing, (error) => {
         if (error) {
@@ -145,4 +145,21 @@ setInterval(() => {
             io.emit('ping-status', { success: true }); 
         }
     });
-}, 10000);  // 10000 milisegundos = 10 segundos
+}, 10000);  // 10000 milisegundos = 10 segundos */
+
+// Reemplaza tu intervalo de ping por este "Despertador de Aplicación"
+setInterval(async () => {
+    if (zkInstance && relojConectado) {
+        try {
+            // Pedir la hora es el comando más ligero para "despertar" el socket
+            await zkInstance.getTime(); 
+            io.emit('ping-status', { success: true });
+        } catch (e) {
+            console.log('⚠️ El reloj no respondió al comando interno, intentando ping de red...');
+            // Si falla el comando, intentamos el ping básico que ya tenías
+            exec(comandoPing, (error) => {
+                io.emit('ping-status', { success: !error });
+            });
+        }
+    }
+}, 10000); // Mantenlo cada 10 segundos
