@@ -5,6 +5,8 @@ import { Server } from 'socket.io';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import { exec } from 'child_process';
+import os from 'os';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,10 +22,12 @@ let empleados = [];
 let temporizadorReinicio = null;
 let zkInstance = null;
 let relojConectado = false;
+let historialRegistros = [];
 
 // Cuando la página web se abre o recarga, le enviamos el estado actual
 io.on('connection', (socket) => {
     socket.emit('estado-reloj', { conectado: relojConectado });
+    socket.emit('historial-inicial', historialRegistros);
 });
 
 try {
@@ -95,6 +99,10 @@ async function iniciarReloj() {
                     estado: estado
                 };
 
+                // Guardar en historial (máximo 5)
+                historialRegistros.unshift(registro);
+                if (historialRegistros.length > 8) historialRegistros.pop();
+
                 console.log('Registro procesado:', registro);
                 io.emit('nueva-checada', registro);
             }
@@ -122,3 +130,16 @@ server.listen(3000, () => {
     console.log('🌐 Servidor en puerto 3000');
     iniciarReloj();
 });
+
+// --- RUTINA KEEP-ALIVE (Mantener Wi-Fi del reloj despierto) ---
+// Define el comando correcto según tu sistema operativo (Windows o Linux/Mac)
+const comandoPing = os.platform() === 'win32' ? 'ping -n 1 192.168.0.240' : 'ping -c 1 192.168.0.240';
+
+setInterval(() => {
+    exec(comandoPing, (error) => {
+        // Solo avisamos en la consola si el ping falla para no saturar los logs
+        if (error) {
+            console.log('⚠️ Latido de red fallido: El reloj no respondió al ping.');
+        }
+    });
+}, 10000); // 10000 milisegundos = 10 segundos

@@ -12,6 +12,10 @@ const mensajeEstado = document.getElementById("mensajeEstado");
 const tipoRegistro = document.getElementById("tipoRegistro");
 const estadoReloj = document.getElementById("estadoReloj");
 
+// --- LÓGICA DEL HISTORIAL ---
+const contenedorHistorial = document.getElementById("contenedorHistorial");
+const cuerpoHistorial = document.getElementById("cuerpoHistorial");
+
 // Audios
 const audioExito = document.getElementById("audioExito");
 const audioAlerta = document.getElementById("audioAlerta");
@@ -59,11 +63,13 @@ socket.on("nueva-checada", (data) => {
         tipoRegistro.className = "text-4xl font-extrabold tracking-widest text-red-700";
         mensajeEstado.className = "max-w-xl mx-auto italic text-red-600 text-3xl leading-tight";
         audioAlerta.play();
+        agregarFilaHistorial(data);
     } else {
         tipoRegistro.textContent = data.tipo;
         tipoRegistro.className = "text-4xl font-extrabold tracking-widest text-green-700";
         mensajeEstado.className = "max-w-xl mx-auto italic text-green-600 text-3xl";
         audioExito.play();
+        agregarFilaHistorial(data);
     }
 
     finalizarProceso();
@@ -121,3 +127,36 @@ function finalizarProceso() {
         barra.style.width = '0%';
     }, 400);
 }
+
+function agregarFilaHistorial(registro) {
+    contenedorHistorial.classList.remove("hidden");
+    contenedorHistorial.classList.add("flex"); // Para mantener el diseño de la columna
+    
+    const fila = document.createElement("tr");
+    
+    // Dejamos una pista visual en el color del nombre
+    let colorEstado = registro.estado.includes("INVÁLIDO") || registro.estado.includes("ANTICIPADA") 
+        ? "text-red-600 font-bold" 
+        : "text-green-600 font-medium";
+
+    fila.innerHTML = `
+        <td class="px-6 py-4 whitespace-nowrap ${colorEstado}">${registro.nombre}</td>
+        <td class="px-6 py-4 whitespace-nowrap font-mono text-gray-500 text-right">${registro.hora}</td>
+    `;
+    
+    // Insertar siempre al principio (arriba)
+    cuerpoHistorial.insertBefore(fila, cuerpoHistorial.firstChild);
+    
+    // Aumentamos a 8 para aprovechar el espacio vertical de la nueva columna
+    if (cuerpoHistorial.children.length > 8) {
+        cuerpoHistorial.removeChild(cuerpoHistorial.lastChild);
+    }
+}
+// Cargar historial inicial al abrir la página
+socket.on("historial-inicial", (historial) => {
+    cuerpoHistorial.innerHTML = "";
+    if (historial.length > 0) {
+        // Insertamos al revés para que el más reciente quede hasta arriba
+        historial.slice().reverse().forEach(agregarFilaHistorial);
+    }
+});
