@@ -27,10 +27,14 @@
         background-color: #e74c3c !important; /* Rojo si falla */
         opacity: 1;
     }
-    .ping-flash {
-    box-shadow: 0 0 10px rgba(46, 204, 113, 0.8);
-    transition: box-shadow 0.3s ease-in-out;
-    }
+.ping-flash {
+    /* Forzamos la sombra verde por encima de Tailwind */
+    box-shadow: 0 0 25px rgba(46, 204, 113, 1) !important;
+    /* Añadimos un borde verde neón momentáneo para que sea súper visible */
+    outline: 3px solid #2ecc71 !important;
+    outline-offset: 2px;
+    transition: all 0.3s ease-in-out;
+}
 </style>
     </head>
     <body class="bg-ipn-fondo font-sans min-h-screen flex flex-col">
