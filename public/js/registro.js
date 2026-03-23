@@ -160,3 +160,16 @@ socket.on("historial-inicial", (historial) => {
         historial.slice().reverse().forEach(agregarFilaHistorial);
     }
 });
+
+const indicador = document.getElementById('indicador-ping');
+
+socket.on('ping-status', (data) => {
+    if (data.success) {
+        indicador.classList.remove('error-ping');
+        // Efecto visual rápido
+        indicador.classList.add('latido');
+        setTimeout(() => indicador.classList.remove('latido'), 500);
+    } else {
+        indicador.classList.add('error-ping');
+    }
+});

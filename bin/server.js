@@ -137,9 +137,12 @@ const comandoPing = os.platform() === 'win32' ? 'ping -n 1 192.168.0.240' : 'pin
 
 setInterval(() => {
     exec(comandoPing, (error) => {
-        // Solo avisamos en la consola si el ping falla para no saturar los logs
         if (error) {
             console.log('⚠️ Latido de red fallido: El reloj no respondió al ping.');
+            io.emit('ping-status', { success: false }); // Avisar fallo
+        } else {
+            // Enviamos un evento "latido" a la UI
+            io.emit('ping-status', { success: true }); 
         }
     });
-}, 10000); // 10000 milisegundos = 10 segundos
+}, 10000);  // 10000 milisegundos = 10 segundos

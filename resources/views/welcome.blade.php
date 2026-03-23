@@ -7,8 +7,30 @@
         <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="{{ asset('js/tailwindConfig.js') }}"></script>
+        <style>
+    #indicador-ping {
+        width: 10px;
+        height: 10px;
+        background-color: #2ecc71; /* Verde */
+        border-radius: 50%;
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        opacity: 0.3;
+        transition: opacity 0.2s, transform 0.2s;
+    }
+    .latido {
+        opacity: 1 ! anarchy;
+        transform: scale(1.5);
+    }
+    .error-ping {
+        background-color: #e74c3c !important; /* Rojo si falla */
+        opacity: 1;
+    }
+</style>
     </head>
     <body class="bg-ipn-fondo font-sans min-h-screen flex flex-col">
+        <div id="indicador-ping" title="Estado del Reloj"></div>
         <audio id="audioExito" preload="auto">
             <source src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" type="audio/ogg">
         </audio>
