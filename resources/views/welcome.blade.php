@@ -19,10 +19,10 @@
         opacity: 0.3;
         transition: opacity 0.2s, transform 0.2s;
     }
-    .latido {
-        opacity: 1 ! anarchy;
-        transform: scale(1.5);
-    }
+.latido {
+    opacity: 1 !important;
+    transform: scale(1.5);
+}
     .error-ping {
         background-color: #e74c3c !important; /* Rojo si falla */
         opacity: 1;
