@@ -147,9 +147,11 @@ setInterval(() => {
     });
 }, 10000);  // 10000 milisegundos = 10 segundos */
 
+// Reemplaza tu intervalo de ping por este "Despertador de Aplicación"
 setInterval(async () => {
     if (zkInstance && relojConectado) {
         try {
+            // Pedir la hora es el comando más ligero para "despertar" el socket
             await zkInstance.getTime(); 
             io.emit('ping-status', { success: true });
         } catch (e) {
