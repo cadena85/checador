@@ -147,19 +147,19 @@ setInterval(() => {
     });
 }, 10000);  // 10000 milisegundos = 10 segundos */
 
-// Reemplaza tu intervalo de ping por este "Despertador de Aplicación"
 setInterval(async () => {
     if (zkInstance && relojConectado) {
         try {
-            // Pedir la hora es el comando más ligero para "despertar" el socket
             await zkInstance.getTime(); 
             io.emit('ping-status', { success: true });
         } catch (e) {
-            console.log('⚠️ El reloj no respondió al comando interno, intentando ping de red...');
-            // Si falla el comando, intentamos el ping básico que ya tenías
-            exec(comandoPing, (error) => {
-                io.emit('ping-status', { success: !error });
-            });
+            console.log('⚠️ Enlace de datos roto. Forzando reconexión inmediata...');
+            relojConectado = false;
+            io.emit('estado-reloj', { conectado: false });
+            io.emit('ping-status', { success: false });
+            
+            // Reconstruimos el socket al instante
+            iniciarReloj(); 
         }
     }
 }, 10000); // Mantenlo cada 10 segundos
