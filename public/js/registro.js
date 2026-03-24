@@ -161,20 +161,6 @@ socket.on("historial-inicial", (historial) => {
     }
 });
 
-const indicador = document.getElementById('indicador-ping');
-/*
-socket.on('ping-status', (data) => {
-    if (data.success) {
-        indicador.classList.remove('error-ping');
-        // Efecto visual rápido
-        indicador.classList.add('latido');
-        setTimeout(() => indicador.classList.remove('latido'), 500);
-    } else {
-        indicador.classList.add('error-ping');
-    }
-});
-*/
-// Busca esto al final de registro.js y corrígelo:
 socket.on('ping-status', (data) => {
     // Cambiamos 'tu-contenedor-principal' por el div que contiene la tarjeta blanca
    

@@ -45,16 +45,23 @@ app.get('/', (req, res) => {
 
 
 async function iniciarReloj() {
-    // 1. Limpieza profunda antes de conectar
+    // 1. Si ya existe una instancia, la matamos antes de crear una nueva
     if (zkInstance) {
-        try { await zkInstance.disconnect(); } catch (e) {}
-        zkInstance = null;
+        console.log('🔌 Limpiando conexión anterior para evitar saturación...');
+        try {
+            // Intentamos desconectar y destruir el socket
+            await zkInstance.disconnect();
+            zkInstance = null; 
+        } catch (err) {
+            console.log('⚠️ No se pudo cerrar la anterior, procediendo de todos modos...');
+        }
     }
 
-    // IP actualizada a .240 y timeout aumentado a 20000
+    // 2. Creamos la nueva instancia
     zkInstance = new ZKLib('192.168.0.240', 4370, 20000, 4000);
     
     try {
+        console.log('Intentando conectar al reloj...');
         await zkInstance.createSocket();
         console.log('✅ Reloj Conectado');
         relojConectado = true; 
@@ -164,4 +171,4 @@ setInterval(async () => {
             iniciarReloj(); 
         }
     }
-}, 10000); // Mantenlo cada 10 segundos
+}, 30000); // Mantenlo cada 10 segundos
