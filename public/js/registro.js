@@ -138,7 +138,7 @@ function agregarTarjetaHistorial(registro) {
     
     // ATENCIÓN: Eliminamos scale-95 y opacity-0 de Tailwind. 
     // Ahora usamos nuestra clase 'efecto-creacion'
-    tarjeta.className = "bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-gray-100 flex flex-col items-center justify-center text-center space-y-2 efecto-creacion";
+    tarjeta.className = "bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-4 border border-gray-100 flex flex-col items-center justify-center text-center space-y-1 efecto-creacion-lento";
     
     // Determinar colores basados en el estado
     let colorNombre = "text-gray-900";
@@ -168,27 +168,25 @@ function agregarTarjetaHistorial(registro) {
     contenedorHistorial.insertBefore(tarjeta, contenedorHistorial.firstChild);
     
     // --- NUEVA LÓGICA ESTRICTA DE LÍMITE DE 6 ---
-    // Buscamos solo las tarjetas que NO se estén eliminando actualmente
     const tarjetasActivas = contenedorHistorial.querySelectorAll(':scope > div:not(.eliminando)');
     
     if (tarjetasActivas.length > 6) {
-        // Si hay más de 6, eliminamos las más antiguas (que están al final del array)
         for (let i = 6; i < tarjetasActivas.length; i++) {
             const elementoAQuitar = tarjetasActivas[i];
             
-            // 1. Lo marcamos con la bandera 'eliminando' para que no vuelva a contarse
             elementoAQuitar.classList.add('eliminando');
             
-            // 2. Cambiamos la animación de creación por la de explosión
-            elementoAQuitar.classList.remove('efecto-creacion');
-            elementoAQuitar.classList.add('efecto-explosion');
+            // MODIFICACIÓN: Cambiamos las clases a las nuevas animaciones lentas
+            elementoAQuitar.classList.remove('efecto-creacion-lento');
+            elementoAQuitar.classList.add('efecto-salida-lento');
             
-            // 3. Lo borramos del HTML exactamente cuando la animación termine (600ms)
+            // MUY IMPORTANTE: Aumentamos el tiempo a 1500 milisegundos (1.5 segundos)
+            // para que coincida con la duración de la animación 'salidaDerecha' en CSS.
             setTimeout(() => {
                 if (elementoAQuitar && elementoAQuitar.parentNode === contenedorHistorial) {
                     contenedorHistorial.removeChild(elementoAQuitar);
                 }
-            }, 600); 
+            }, 1500); // <-- Cambiado de 600 a 1500
         }
     }
 }

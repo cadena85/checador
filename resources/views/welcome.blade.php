@@ -7,40 +7,27 @@
         <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
         <script src="https://cdn.tailwindcss.com"></script>
         <style>
-        /* ... (tus estilos anteriores de ping y limit-text se mantienen) ... */
-        /* NUEVO: Efecto de creación (Entrada desde la izquierda) */
-        @keyframes slideInCreate {
-        0% { opacity: 0; transform: translateX(-150px) scale(0.6); }
-        70% { opacity: 1; transform: translateX(15px) scale(1.05); }
-        100% { opacity: 1; transform: translateX(0) scale(1); }
-        }
-        .efecto-creacion {
-        /* Dura 0.5 segundos y mantiene el estado final */
-        animation: slideInCreate 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        }
-        /* NUEVO: Efecto de explosión (Salida dramática) */
-        @keyframes explodeEffect {
-        0% { transform: scale(1); opacity: 1; filter: brightness(1); }
-        30% { transform: scale(1.2) rotate(3deg); opacity: 1; background-color: #fee2e2; border-color: #ef4444; box-shadow: 0 0 25px rgba(239, 68, 68, 0.8); }
-        100% { transform: scale(0) rotate(-15deg); opacity: 0; filter: blur(5px); }
-        }
-        .efecto-explosion {
-        /* Dura 0.6 segundos */
-        animation: explodeEffect 0.6s ease-out forwards;
-        pointer-events: none; /* Evita interacciones mientras explota */
-        }
-        </style>
-        <script>
-        // Configuración básica de Tailwind para colores personalizados si no usas archivo externo
-        tailwind.config = {
-        theme: {
-        extend: {
-        colors: {
-        'ipn-guinda': '#6b0f1a', // Ejemplo de color guinda
-        }
-        }
-        }
-        }
+@keyframes aparicionFlotante {
+        0% { opacity: 0; transform: translateY(60px) scale(0.9); }
+        60% { opacity: 0.9; transform: translateY(-10px) scale(1.02); }
+        100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .efecto-creacion-lento {
+        /* Aumentamos el tiempo a 1.2s */
+        animation: aparicionFlotante 1.2s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+    }
+
+    /* NUEVO EFECTO DE SALIDA: Deslizamiento suave a la derecha (1.5 segundos) */
+    @keyframes salidaDerecha {
+        0% { opacity: 1; transform: translateX(0) scale(1); }
+        30% { opacity: 1; transform: translateX(-15px) scale(0.95); } /* Pequeño impulso a la izquierda */
+        100% { opacity: 0; transform: translateX(250px) scale(0.8); } /* Se va a la derecha y desaparece */
+    }
+    .efecto-salida-lento {
+        /* Aumentamos el tiempo a 1.5s */
+        animation: salidaDerecha 1.5s ease-in-out forwards;
+        pointer-events: none; /* Evita que se pueda hacer clic mientras desaparece */
+    }
         </script>
         <style>
         /* Estilos originales de ping y animaciones que ya tenías */
@@ -156,5 +143,5 @@
         © 2026 Instituto Politécnico Nacional | Centro de Desarrollo Aeroespacial
     </footer>
 </body>
-<script src="{{ asset('js/registro.js?v3.1') }}"></script>
+<script src="{{ asset('js/registro.js?v3.2') }}"></script>
 </html>
