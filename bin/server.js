@@ -5,8 +5,6 @@ import { Server } from 'socket.io';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-import { exec } from 'child_process';
-import os from 'os';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -138,23 +136,7 @@ server.listen(3000, () => {
     iniciarReloj();
 });
 
-// --- RUTINA KEEP-ALIVE (Mantener Wi-Fi del reloj despierto) ---
-// Define el comando correcto según tu sistema operativo (Windows o Linux/Mac)
-const comandoPing = os.platform() === 'win32' ? 'ping -n 1 192.168.0.240' : 'ping -c 1 192.168.0.240';
 /*
-setInterval(() => {
-    exec(comandoPing, (error) => {
-        if (error) {
-            console.log('⚠️ Latido de red fallido: El reloj no respondió al ping.');
-            io.emit('ping-status', { success: false }); // Avisar fallo
-        } else {
-            // Enviamos un evento "latido" a la UI
-            io.emit('ping-status', { success: true }); 
-        }
-    });
-}, 10000);  // 10000 milisegundos = 10 segundos */
-
-// Reemplaza tu intervalo de ping por este "Despertador de Aplicación"
 setInterval(async () => {
     if (zkInstance && relojConectado) {
         try {
@@ -171,4 +153,35 @@ setInterval(async () => {
             iniciarReloj(); 
         }
     }
-}, 30000); // Mantenlo cada 10 segundos
+}, 30000); // Mantenlo cada 30 segundos
+*/
+
+// Despertador de Aplicación ajustado con Horario de Reposo
+setInterval(async () => {
+    // Obtenemos la hora actual (formato 24h)
+    const horaActual = new Date().getHours();
+    
+    // DEFINIMOS HORARIO ACTIVO: Ejemplo de 6:00 AM a 10:59 PM (22:00)
+    const esHorarioLaboral = horaActual >= 6 && horaActual < 23;
+
+    if (esHorarioLaboral) {
+        if (zkInstance && relojConectado) {
+            try {
+                // Pedimos la hora solo durante el día
+                await zkInstance.getTime(); 
+                io.emit('ping-status', { success: true });
+            } catch (e) {
+                console.log('⚠️ Enlace de datos roto. Forzando reconexión...');
+                relojConectado = false;
+                io.emit('estado-reloj', { conectado: false });
+                io.emit('ping-status', { success: false });
+                
+                iniciarReloj(); 
+            }
+        }
+    } else {
+        // De madrugada, no hacemos ping. Le damos un respiro al hardware.
+        // Solo emitimos un estado neutral a la interfaz si alguien la deja abierta.
+        io.emit('ping-status', { success: true }); 
+    }
+}, 60000); // 60000 ms = 1 minuto de intervalo
