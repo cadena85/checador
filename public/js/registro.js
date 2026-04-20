@@ -52,7 +52,7 @@ socket.on("nueva-checada", (data) => {
 
     iniciarProceso();
 
-    // Actualizar datos en pantalla
+    // Actualizar datos en pantalla principal
     nombreUsuario.textContent = data.nombre;
     horaRegistroSpan.textContent = data.hora;
     mensajeEstado.textContent = data.estado;
@@ -63,20 +63,21 @@ socket.on("nueva-checada", (data) => {
         tipoRegistro.className = "text-4xl font-extrabold tracking-widest text-red-700";
         mensajeEstado.className = "max-w-xl mx-auto italic text-red-600 text-3xl leading-tight";
         audioAlerta.play();
-        agregarFilaHistorial(data);
     } else {
         tipoRegistro.textContent = data.tipo;
         tipoRegistro.className = "text-4xl font-extrabold tracking-widest text-green-700";
         mensajeEstado.className = "max-w-xl mx-auto italic text-green-600 text-3xl";
         audioExito.play();
-        agregarFilaHistorial(data);
     }
+    
+    // Llamamos a la función para agregar la tarjeta visual
+    agregarTarjetaHistorial(data);
 
     finalizarProceso();
     pantallaEspera.classList.add("hidden");
     pantallaResultado.classList.remove("hidden");
 
-    // Tiempo de muestra (puedes ajustarlo aquí)
+    // Tiempo de muestra
     setTimeout(() => {
         pantallaResultado.classList.add("hidden");
         pantallaEspera.classList.remove("hidden");
@@ -128,38 +129,67 @@ function finalizarProceso() {
     }, 400);
 }
 
-function agregarFilaHistorial(registro) {
+function agregarTarjetaHistorial(registro) {
+    // Asegurarnos de que el contenedor sea visible
     contenedorHistorial.classList.remove("hidden");
-    contenedorHistorial.classList.add("flex"); // Para mantener el diseño de la columna
     
-    const fila = document.createElement("tr");
+    // Crear el elemento contenedor de la tarjeta
+    const tarjeta = document.createElement("div");
     
-    // Dejamos una pista visual en el color del nombre
-    let colorEstado = registro.estado.includes("INVÁLIDO") || registro.estado.includes("ANTICIPADA") 
-        ? "text-red-600 font-bold" 
-        : "text-green-600 font-medium";
+    // ATENCIÓN: Eliminamos scale-95 y opacity-0 de Tailwind. 
+    // Ahora usamos nuestra clase 'efecto-creacion'
+    tarjeta.className = "bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-4 border border-gray-100 flex flex-col items-center justify-center text-center space-y-1 efecto-creacion-lento";
+    
+    // Determinar colores basados en el estado
+    let colorNombre = "text-gray-900";
+    let colorHora = "text-ipn-guinda";
+    let bordeExtra = "";
 
-    fila.innerHTML = `
-        <td class="px-6 py-4 whitespace-nowrap ${colorEstado}">${registro.nombre}</td>
-        <td class="px-6 py-4 whitespace-nowrap font-mono text-gray-500 text-right">${registro.hora}</td>
+    if (registro.estado && (registro.estado.includes("INVÁLIDO") || registro.estado.includes("ANTICIPADA"))) {
+        colorNombre = "text-red-700 font-bold";
+        colorHora = "text-red-600";
+        bordeExtra = "border-l-4 border-red-500";
+    } else {
+        colorNombre = "text-gray-950 font-semibold";
+        colorHora = "text-green-700";
+        bordeExtra = "border-l-4 border-green-500";
+    }
+    
+    if(bordeExtra) tarjeta.className += " " + bordeExtra;
+
+    tarjeta.innerHTML = `
+<div class="text-[10px] md:text-xs text-gray-500 uppercase tracking-wider font-medium">Registro Reciente</div>
+        <div class="w-full ${colorNombre} text-base md:text-lg font-bold leading-tight break-words limit-text-2-lines">${registro.nombre}</div>
+        <div class="w-full ${colorHora} text-3xl md:text-4xl font-black font-mono tracking-tighter pt-1">${registro.hora}</div>
+        <div class="text-xs italic text-gray-600">${registro.tipo || ''}</div>
     `;
     
-    // Insertar siempre al principio (arriba)
-    cuerpoHistorial.insertBefore(fila, cuerpoHistorial.firstChild);
+    // Insertar siempre al principio (arriba/izquierda)
+    contenedorHistorial.insertBefore(tarjeta, contenedorHistorial.firstChild);
     
-    // Aumentamos a 8 para aprovechar el espacio vertical de la nueva columna
-    if (cuerpoHistorial.children.length > 8) {
-        cuerpoHistorial.removeChild(cuerpoHistorial.lastChild);
+    // --- NUEVA LÓGICA ESTRICTA DE LÍMITE DE 6 ---
+    const tarjetasActivas = contenedorHistorial.querySelectorAll(':scope > div:not(.eliminando)');
+    
+    if (tarjetasActivas.length > 6) {
+        for (let i = 6; i < tarjetasActivas.length; i++) {
+            const elementoAQuitar = tarjetasActivas[i];
+            
+            elementoAQuitar.classList.add('eliminando');
+            
+            // MODIFICACIÓN: Cambiamos las clases a las nuevas animaciones lentas
+            elementoAQuitar.classList.remove('efecto-creacion-lento');
+            elementoAQuitar.classList.add('efecto-salida-lento');
+            
+            // MUY IMPORTANTE: Aumentamos el tiempo a 1500 milisegundos (1.5 segundos)
+            // para que coincida con la duración de la animación 'salidaDerecha' en CSS.
+            setTimeout(() => {
+                if (elementoAQuitar && elementoAQuitar.parentNode === contenedorHistorial) {
+                    contenedorHistorial.removeChild(elementoAQuitar);
+                }
+            }, 1500); // <-- Cambiado de 600 a 1500
+        }
     }
 }
-// Cargar historial inicial al abrir la página
-socket.on("historial-inicial", (historial) => {
-    cuerpoHistorial.innerHTML = "";
-    if (historial.length > 0) {
-        // Insertamos al revés para que el más reciente quede hasta arriba
-        historial.slice().reverse().forEach(agregarFilaHistorial);
-    }
-});
 
 socket.on('ping-status', (data) => {
     const tarjeta = document.querySelector('.bg-white.rounded-3xl.shadow-2xl');
@@ -167,5 +197,16 @@ socket.on('ping-status', (data) => {
     if (data.success && tarjeta) {
         tarjeta.classList.add('ping-flash');
         setTimeout(() => tarjeta.classList.remove('ping-flash'), 400);
+    }
+});
+
+// Cargar historial inicial al abrir la página
+socket.on("historial-inicial", (historial) => {
+    contenedorHistorial.innerHTML = ""; // Limpiar contenedor
+    if (historial.length > 0) {
+        // Tomamos solo los últimos 6 del historial recibido
+        // Suponiendo que el historial viene ordenado cronológicamente,
+        // usamos slice(-6) para obtener los últimos 6, y reverse() para insertarlos correctamente
+        historial.slice(-6).forEach(agregarTarjetaHistorial);
     }
 });
