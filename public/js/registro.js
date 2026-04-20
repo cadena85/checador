@@ -162,8 +162,6 @@ socket.on("historial-inicial", (historial) => {
 });
 
 socket.on('ping-status', (data) => {
-    // Cambiamos 'tu-contenedor-principal' por el div que contiene la tarjeta blanca
-   
     const tarjeta = document.querySelector('.bg-white.rounded-3xl.shadow-2xl');
     
     if (data.success && tarjeta) {
