@@ -155,7 +155,7 @@ setInterval(async () => {
     }
 }, 30000); // Mantenlo cada 30 segundos
 */
-
+/*
 // Despertador de Aplicación ajustado con Horario de Reposo
 setInterval(async () => {
     // Obtenemos la hora actual (formato 24h)
@@ -184,4 +184,37 @@ setInterval(async () => {
         // Solo emitimos un estado neutral a la interfaz si alguien la deja abierta.
         io.emit('ping-status', { success: true }); 
     }
-}, 60000); // 60000 ms = 1 minuto de intervalo
+}, 60000); // 60000 ms = 1 minuto de 
+*/
+
+// Despertador de Aplicación ajustado (45 segs día / ~10 min noche)
+let contadorDescanso = 0;
+
+setInterval(async () => {
+    const horaActual = new Date().getHours();
+    const esHorarioLaboral = horaActual >= 6;
+
+    // Si es de día, hace ping cada 45s. Si es de noche, cada 13 ciclos (~9.7 minutos).
+    const debeHacerPing = esHorarioLaboral || (!esHorarioLaboral && contadorDescanso >= 13);
+
+    if (debeHacerPing) {
+        if (!esHorarioLaboral) contadorDescanso = 0; // Reiniciamos el contador nocturno
+
+        if (zkInstance && relojConectado) {
+            try {
+                await zkInstance.getTime(); 
+                io.emit('ping-status', { success: true });
+            } catch (e) {
+                console.log('⚠️ Enlace de datos roto. Forzando reconexión...');
+                relojConectado = false;
+                io.emit('estado-reloj', { conectado: false });
+                io.emit('ping-status', { success: false });
+                iniciarReloj(); 
+            }
+        }
+    } else {
+        // En la noche, solo sumamos ciclos (45s cada uno) sin molestar al reloj
+        contadorDescanso++;
+        io.emit('ping-status', { success: true }); 
+    }
+}, 45000); // 45 segundos de intervalo base
