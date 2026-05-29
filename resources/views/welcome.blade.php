@@ -2,7 +2,7 @@
 <html lang="es">
     <head>
         <meta charset="UTF-8">
-        <title>Checador Premium</title>
+        <title>Checador CDA</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
         <script src="https://cdn.tailwindcss.com"></script>
@@ -54,7 +54,7 @@
             <source src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" type="audio/ogg">
         </audio>
         <audio id="audioAlerta" preload="auto">
-            <source src="https://actions.google.com/sounds/v1/emergency/beeper_emergency_call.ogg" type="audio/ogg">
+            <source src="{{ asset('sounds/alerta.mp3') }}" type="audio/mpeg">
         </audio>
         <!-- BARRA SUPERIOR CON RELOJ -->
         <div class="max-w-6xl mx-auto px-6 flex justify-between items-center text-sm py-2">
