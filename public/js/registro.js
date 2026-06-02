@@ -138,8 +138,23 @@ function agregarTarjetaHistorial(registro) {
     
     // ATENCIÓN: Eliminamos scale-95 y opacity-0 de Tailwind. 
     // Ahora usamos nuestra clase 'efecto-creacion'
-    tarjeta.className = "bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-4 border border-gray-100 flex flex-col items-center justify-center text-center space-y-1 efecto-creacion-lento";
-    
+
+    tarjeta.className = `
+    bg-white
+    rounded-3xl
+    shadow-md
+    border
+    border-gray-200
+    p-5
+    transition-all
+    duration-300
+    hover:-translate-y-1
+    hover:border-cyan-400
+    hover:scale-105
+    hover:shadow-[0_0_20px_rgba(0,212,255,.25)]
+    efecto-creacion-lento
+    `;
+
     // Determinar colores basados en el estado
     let colorNombre = "text-gray-900";
     let colorHora = "text-ipn-guinda";
@@ -152,7 +167,7 @@ function agregarTarjetaHistorial(registro) {
     } else {
         colorNombre = "text-gray-950 font-semibold";
         colorHora = "text-green-700";
-        bordeExtra = "border-l-4 border-green-500";
+        bordeExtra = "border-l-4 border-green-600";
     }
     
     if(bordeExtra) tarjeta.className += " " + bordeExtra;
