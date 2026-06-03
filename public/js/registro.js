@@ -173,7 +173,7 @@ function agregarTarjetaHistorial(registro) {
     if(bordeExtra) tarjeta.className += " " + bordeExtra;
 
     tarjeta.innerHTML = `
-<div class="text-[10px] md:text-xs text-gray-500 uppercase tracking-wider font-medium">Registro Reciente</div>
+        <div class="text-[10px] md:text-xs text-gray-500 uppercase tracking-wider font-medium">Registro Reciente</div>
         <div class="w-full ${colorNombre} text-base md:text-lg font-bold leading-tight break-words limit-text-2-lines">${registro.nombre}</div>
         <div class="w-full ${colorHora} text-3xl md:text-4xl font-black font-mono tracking-tighter pt-1">${registro.hora}</div>
         <div class="text-xs italic text-gray-600">${registro.tipo || ''}</div>
@@ -213,7 +213,7 @@ socket.on('ping-status', (data) => {
         tarjeta.classList.add('ping-flash');
         setTimeout(() => tarjeta.classList.remove('ping-flash'), 400);
     }
-});
+});;
 
 // Cargar historial inicial al abrir la página
 socket.on("historial-inicial", (historial) => {
