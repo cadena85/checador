@@ -62,14 +62,23 @@ socket.on("nueva-checada", (data) => {
         tipoRegistro.textContent = "AVISO DE INCIDENCIA";
         tipoRegistro.className = "text-4xl font-extrabold tracking-widest text-red-700";
         mensajeEstado.className = "max-w-xl mx-auto italic text-red-600 text-3xl leading-tight";
-        audioAlerta.play();
+        //audioAlerta.play();
     } else {
         tipoRegistro.textContent = data.tipo;
         tipoRegistro.className = "text-4xl font-extrabold tracking-widest text-green-700";
         mensajeEstado.className = "max-w-xl mx-auto italic text-green-600 text-3xl";
-        audioExito.play();
+        //audioExito.play();
     }
     
+    // --- CÓDIGO CORREGIDO PARA CONTROL DE AUDIO ---
+    // Forzamos que solo los estados limpios y exitosos usen 'audioExito'
+    if (data.status === 'ENTRADA_VALIDA' || data.status === 'SALIDA_VALIDA') {
+        audioExito.play().catch(err => console.log("Error al reproducir audio:", err));
+    } else {
+        // Todo lo demás: REGISTRO_INVALIDO, SALIDA_ANTICIPADA, TOLERANCIA_SUPERADA, etc., sonará aquí
+        audioAlerta.play().catch(err => console.log("Error al reproducir audio:", err));
+    }
+
     // Llamamos a la función para agregar la tarjeta visual
     agregarTarjetaHistorial(data);
 
