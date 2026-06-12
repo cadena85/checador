@@ -2,36 +2,68 @@ const socket = io("http://localhost:3000", {
     transports: ['websocket']
 });
 
-// Selectores de UI
+// Selectores de UI (Esto ya lo tienes)
 const estadoConexion = document.getElementById("estadoConexion");
 const pantallaEspera = document.getElementById("pantallaEspera");
 const pantallaResultado = document.getElementById("pantallaResultado");
-const nombreUsuario = document.getElementById("nombreUsuario"); // DEFINIDO
+const nombreUsuario = document.getElementById("nombreUsuario");
 const horaRegistroSpan = document.getElementById("horaRegistro");
 const mensajeEstado = document.getElementById("mensajeEstado");
 const tipoRegistro = document.getElementById("tipoRegistro");
 const estadoReloj = document.getElementById("estadoReloj");
-
-// --- LÓGICA DEL HISTORIAL ---
 const contenedorHistorial = document.getElementById("contenedorHistorial");
 const cuerpoHistorial = document.getElementById("cuerpoHistorial");
 
-// Audios
+// Audios (Esto ya lo tienes)
 const audioExito = document.getElementById("audioExito");
 const audioAlerta = document.getElementById("audioAlerta");
 
-let bloqueado = false;
+let bloqueado = false; // (Esto ya lo tienes)
+
+
+// =========================================================================
+// 👇 ¡AQUÍ PEGA ESTO! JUSTO EN ESTE ESPACIO EN BLANCO 👇
+// =========================================================================
+const configuracionEstados = {
+    'ENTRADA_VALIDA': {
+        texto: 'Registro Válido',
+        claseBadge: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+        icono: '✅'
+    },
+    'SALIDA_VALIDA': {
+        texto: 'Registro Válido',
+        claseBadge: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+        icono: '✅'
+    },
+    'SALIDA_ANTICIPADA': {
+        texto: 'Salida Anticipada',
+        claseBadge: 'bg-amber-50 text-amber-700 border border-amber-200',
+        icono: '⚠️'
+    },
+    'REGISTRO_INVALIDO': {
+        texto: 'Registro Inválido',
+        claseBadge: 'bg-rose-50 text-rose-700 border border-rose-200',
+        icono: '🚨'
+    },
+    'TOLERANCIA_SUPERADA': {
+        texto: 'Tolerancia Superada',
+        claseBadge: 'bg-rose-50 text-rose-700 border border-rose-200',
+        icono: '⏰'
+    }
+};
+// =========================================================================
+
 
 socket.on("connect", () => {
     if (estadoConexion) {
-        estadoConexion.textContent = "Servidor: En línea";
+        estadoConexion.textContent = "En línea";
         estadoConexion.className = "text-xs font-medium px-2 py-0.5 rounded-full bg-green-200 text-green-800 inline-block";
     }
 });
 
 socket.on("disconnect", () => {
     if (estadoConexion) {
-        estadoConexion.textContent = "Servidor: Sin conexión";
+        estadoConexion.textContent = "Sin conexión";
         estadoConexion.className = "text-xs font-medium px-2 py-0.5 rounded-full bg-red-200 text-red-800 inline-block";
     }
 });
@@ -46,47 +78,52 @@ socket.on("estado-reloj", (data) => {
     }
 });
 
+
 socket.on("nueva-checada", (data) => {
     if (bloqueado) return;
     bloqueado = true;
 
     iniciarProceso();
 
-    // Actualizar datos en pantalla principal
+    // Inyectar datos planos del empleado
     nombreUsuario.textContent = data.nombre;
     horaRegistroSpan.textContent = data.hora;
-    mensajeEstado.textContent = data.estado;
+    tipoRegistro.textContent = data.tipo; // Muestra "ENTRADA" o "SALIDA" en la cápsula superior
 
-    // Lógica visual para registros inválidos
-    if (data.estado.includes("INVÁLIDO")) {
-        tipoRegistro.textContent = "AVISO DE INCIDENCIA";
-        tipoRegistro.className = "text-4xl font-extrabold tracking-widest text-red-700";
-        mensajeEstado.className = "max-w-xl mx-auto italic text-red-600 text-3xl leading-tight";
-        //audioAlerta.play();
+    // --- MANEJO DE ESTADOS VISUALES PREMIUM Y AUDIO ---
+    
+    if (data.estado.includes("INVÁLIDO") || data.estado.includes("ANTICIPADA") || data.estado.includes("TOLERANCIA")) {
+        
+        if (data.estado.includes("ANTICIPADA")) {
+            // Estilo Ámbar para advertencias menores (Salidas anticipadas)
+            mensajeEstado.textContent = `⚠️ SALIDA ANTICIPADA: ${data.estado}`;
+            mensajeEstado.className = "inline-flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm bg-amber-50 text-amber-700 border-amber-200";
+        } else {
+            // Estilo Carmesí para incidencias críticas (Tolerancias superadas o registros inválidos)
+            mensajeEstado.textContent = `🚨 INCIDENCIA: ${data.estado}`;
+            mensajeEstado.className = "inline-flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm bg-rose-50 text-rose-700 border-rose-200";
+        }
+
+        // Forzar audioAlerta (alerta.mp3 local) para cualquier incidencia
+        audioAlerta.play().catch(err => console.log("Error de audio:", err));
+
     } else {
-        tipoRegistro.textContent = data.tipo;
-        tipoRegistro.className = "text-4xl font-extrabold tracking-widest text-green-700";
-        mensajeEstado.className = "max-w-xl mx-auto italic text-green-600 text-3xl";
-        //audioExito.play();
+        // REGISTRO LIMPIO Y COMPLETAMENTE VÁLIDO (Todo bien)
+        mensajeEstado.textContent = `✅ REGISTRO VÁLIDO: ${data.estado}`;
+        mensajeEstado.className = "inline-flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm bg-emerald-50 text-emerald-700 border-emerald-200";
+        
+        // Sonar wood_plank_flicks.ogg únicamente aquí
+        audioExito.play().catch(err => console.log("Error de audio:", err));
     }
     
-    // --- CÓDIGO CORREGIDO PARA CONTROL DE AUDIO ---
-    // Forzamos que solo los estados limpios y exitosos usen 'audioExito'
-    if (data.status === 'ENTRADA_VALIDA' || data.status === 'SALIDA_VALIDA') {
-        audioExito.play().catch(err => console.log("Error al reproducir audio:", err));
-    } else {
-        // Todo lo demás: REGISTRO_INVALIDO, SALIDA_ANTICIPADA, TOLERANCIA_SUPERADA, etc., sonará aquí
-        audioAlerta.play().catch(err => console.log("Error al reproducir audio:", err));
-    }
-
-    // Llamamos a la función para agregar la tarjeta visual
+    // Agregar registro al historial inferior
     agregarTarjetaHistorial(data);
 
     finalizarProceso();
     pantallaEspera.classList.add("hidden");
     pantallaResultado.classList.remove("hidden");
 
-    // Tiempo de muestra
+    // Mantener la visualización por 10 segundos antes de regresar a la espera
     setTimeout(() => {
         pantallaResultado.classList.add("hidden");
         pantallaEspera.classList.remove("hidden");
@@ -191,11 +228,11 @@ function agregarTarjetaHistorial(registro) {
     // Insertar siempre al principio (arriba/izquierda)
     contenedorHistorial.insertBefore(tarjeta, contenedorHistorial.firstChild);
     
-    // --- NUEVA LÓGICA ESTRICTA DE LÍMITE DE 6 ---
+    // --- NUEVA LÓGICA ESTRICTA DE LÍMITE DE 3 ---
     const tarjetasActivas = contenedorHistorial.querySelectorAll(':scope > div:not(.eliminando)');
     
-    if (tarjetasActivas.length > 6) {
-        for (let i = 6; i < tarjetasActivas.length; i++) {
+    if (tarjetasActivas.length > 3) {
+        for (let i = 3; i < tarjetasActivas.length; i++) {
             const elementoAQuitar = tarjetasActivas[i];
             
             elementoAQuitar.classList.add('eliminando');
@@ -231,6 +268,6 @@ socket.on("historial-inicial", (historial) => {
         // Tomamos solo los últimos 6 del historial recibido
         // Suponiendo que el historial viene ordenado cronológicamente,
         // usamos slice(-6) para obtener los últimos 6, y reverse() para insertarlos correctamente
-        historial.slice(-6).forEach(agregarTarjetaHistorial);
+        historial.slice(-3).forEach(agregarTarjetaHistorial);
     }
 });

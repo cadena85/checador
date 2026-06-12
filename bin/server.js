@@ -170,8 +170,9 @@ setInterval(async () => {
                 yaSeReinicioHoy = true;
                 relojConectado = false;
                 io.emit('estado-reloj', { conectado: false });
-                
-                await zkInstance.executeCmd(1003, ''); 
+                console.log('Enviando CMD_RESTART (1004)...');
+                const respuesta = await zk.executeCmd(1004, '');
+                console.log('Respuesta:', respuesta);
                 console.log('✅ Comando de reinicio inyectado con éxito.');
                 return;
             } catch (e) {
