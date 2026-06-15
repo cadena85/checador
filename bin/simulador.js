@@ -75,6 +75,59 @@ function iniciarSimulador() {
     }, 10000); // Se ejecuta cada 10 segundos
 }
 
+// Habilitar lectura de JSON en el cuerpo de las peticiones (POST)
+app.use(express.json());
+
+// Nueva ruta para recibir simulaciones manuales desde el Blade de Laravel
+app.post('/api/simular-manual', (req, res) => {
+    const { empleadoId, tipo, horaSimulada } = req.body;
+
+    // Buscar al empleado en la base de datos cargada
+    const empleado = empleados.find(e => e.id == empleadoId);
+    if (!empleado) {
+        return res.status(404).json({ error: "Empleado no encontrado" });
+    }
+
+    // Convertir la hora simulada (HH:MM) a minutos totales del día
+    const [horaSim, minSim] = horaSimulada.split(':').map(Number);
+    const minutosActuales = (horaSim * 60) + minSim;
+    let estado = "A TIEMPO";
+
+    // Aplicar las mismas reglas institucionales de tu simulador
+    if (tipo === 'ENTRADA') {
+        const [horaE, minE] = empleado.entrada.split(':').map(Number);
+        const limiteTolerancia = (horaE * 60) + minE + 30; // 30 min de gracia
+
+        if (minutosActuales > limiteTolerancia) {
+            estado = "REGISTRO INVÁLIDO, superaste la tolerancia de entrada de 30 minutos.";
+        }
+    } else {
+        const [horaS, minS] = empleado.salida.split(':').map(Number);
+        const minutosSalidaLey = (horaS * 60) + minS;
+
+        if (minutosActuales < minutosSalidaLey) {
+            estado = "SALIDA-ANTICIPADA";
+        }
+    }
+
+    // Estructurar el payload final idéntico al hardware real
+    const registro = {
+        id: empleado.id,
+        nombre: empleado.nombre,
+        hora: `${horaSimulada}:00`,
+        tipo: tipo,
+        estado: estado
+    };
+
+    console.log('🧪 Simulación Manual Detonada:', registro);
+
+    // Emitir el evento instantáneamente por WebSockets a la pantalla principal
+    io.emit('nueva-checada', registro);
+
+    // Responder a Laravel con el resultado para mostrarlo en tu panel de control
+    return res.json({ success: true, registro });
+});
+
 server.listen(3000, () => {
     console.log('🌐 Servidor simulador en: http://localhost:3000');
     iniciarSimulador();
