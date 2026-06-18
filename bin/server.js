@@ -163,26 +163,39 @@ setInterval(async () => {
     const minutoActual = ahora.getMinutes();
     const esHorarioLaboral = horaActual >= 6;
 
-    if (horaActual === 3 && minutoActual === 0) {
-        if (!yaSeReinicioHoy && zkInstance && relojConectado) {
+    // 1. Rango seguro: Si son las 3 AM (entre el minuto 0 y 5) y no se ha reiniciado hoy
+    if (horaActual === 3 && minutoActual >= 0 && minutoActual <= 5 && !yaSeReinicioHoy) {
+        
+        // Validamos que el reloj esté conectado
+        if (zkInstance && relojConectado) {
+            // Marcamos inmediatamente como reiniciado para evitar dobles envíos en los siguientes minutos
+            yaSeReinicioHoy = true; 
+            
             try {
-                console.log('🔄 Enviando orden CMD_REBOOT (1003) para purgar memoria del checador...');
-                yaSeReinicioHoy = true;
-                relojConectado = false;
-                io.emit('estado-reloj', { conectado: false });
+                console.log('⏰ [3:00 AM] Iniciando reinicio programado diario...');
                 console.log('Enviando CMD_RESTART (1004)...');
-                const respuesta = await zk.executeCmd(1004, '');
-                console.log('Respuesta:', respuesta);
-                console.log('✅ Comando de reinicio inyectado con éxito.');
+                
+                // CORREGIDO: Usar zkInstance en lugar de zk
+                const respuesta = await zkInstance.executeCmd(1004, ''); 
+                console.log('Respuesta del dispositivo:', respuesta);
+
+                const horaFormateada = ahora.toLocaleTimeString(); // Obtiene la hora en formato HH:MM:SS                
+                console.log(`⏰ [${horaFormateada}] Reinicio diario ejecutado correctamente.`);
+                console.log('✅ Comando de reinicio inyectado con éxito al dispositivo.');
                 return;
             } catch (e) {
-                console.error('❌ Error de red al intentar inyectar el reinicio remoto:', e.message);
-                yaSeReinicioHoy = false;
+                const horaError = new Date().toLocaleTimeString();
+                console.error('❌ [${horaError}] Error de red al intentar inyectar el reinicio remoto:', e.message);
+                // Si falló por red, permitimos que lo vuelva a intentar en el siguiente minuto
+                yaSeReinicioHoy = false; 
             }
+        } else {
+            console.log('⚠️ Intento de reinicio fallido: El reloj no está conectado o zkInstance es nulo.');
         }
     }
 
-    if (horaActual === 3 && minutoActual > 1) {
+    // 2. Restablecer la bandera cuando pase el horario crítico (ej. a las 3:06 AM o después)
+    if (horaActual === 3 && minutoActual > 5) {
         yaSeReinicioHoy = false;
     }
 
