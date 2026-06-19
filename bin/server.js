@@ -185,7 +185,9 @@ setInterval(async () => {
                 return;
             } catch (e) {
                 const horaError = new Date().toLocaleTimeString();
-                console.error('❌ [${horaError}] Error de red al intentar inyectar el reinicio remoto:', e.message);
+                console.error(`🧨 [${horaError}] Error de red al intentar inyectar el reinicio remoto:`, e.message);
+                console.error(e);
+                console.error(e.stack);
                 // Si falló por red, permitimos que lo vuelva a intentar en el siguiente minuto
                 yaSeReinicioHoy = false; 
             }
