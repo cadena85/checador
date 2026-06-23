@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\RelojMantenimientoController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -30,3 +31,15 @@ Route::get('/panel-simulador', function () {
 
     return view('panel-simulador', compact('empleados'));
 });
+
+// Agrupa las rutas dentro de tu middleware de autenticación existente (Breeze)
+//Route::middleware(['auth'])->group(function () {
+    
+    // Vista independiente del Panel de Mantenimiento
+    Route::get('/reloj/mantenimiento', [RelojMantenimientoController::class, 'index'])
+         ->name('reloj.mantenimiento');
+    
+    // Ruta tipo puente para mandar la acción de forma asíncrona a Node.js
+    Route::post('/reloj/mantenimiento/reiniciar', [RelojMantenimientoController::class, 'reiniciar'])
+         ->name('reloj.reiniciar');
+//});

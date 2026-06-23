@@ -5,6 +5,7 @@ import { Server } from 'socket.io';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import cors from 'cors'; // 👈 CORRECCIÓN 1: Importar cors para evitar bloqueos de red
 
 // --- CONFIGURACIÓN DE RUTAS Y ENTORNO ---
 const __filename = fileURLToPath(import.meta.url);
@@ -14,17 +15,21 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
+// =========================================================================
+// MIDDLEWARES GLOBALES (Siempre van arriba, justo abajo de instanciar 'app')
+// =========================================================================
+app.use(cors());          // 👈 CORRECCIÓN 1b: Habilitar peticiones cruzadas de forma segura
+app.use(express.json());  // 👈 CORRECCIÓN 1c: Permitir que Express lea cuerpos de datos en formato JSON
+
 const rutaHorarios = path.join(__dirname, 'horarios.json');
 let empleados = [];
 
-// =========================================================================
 // VARIABLES GLOBALES DE CONTROL
-// =========================================================================
 let zkInstance = null;
 let relojConectado = false;
-let historialRegistros = [];  // Almacena las últimas checadas en memoria
-let contadorDescanso = 0;     // Cuenta los minutos nocturnos sin molestar al reloj
-let yaSeReinicioHoy = false;   // Bandera de seguridad para evitar bucles de reinicios a las 3:00 AM
+let historialRegistros = [];  
+let contadorDescanso = 0;     
+let yaSeReinicioHoy = false;   
 
 // Servir archivos estáticos del frontend
 app.use(express.static(__dirname));
@@ -224,6 +229,44 @@ setInterval(async () => {
     }
 }, 60000);
 
+// =========================================================================
+// ENDPOINTS DE LA API (Deben declararse ANTES de levantar el puerto)
+// =========================================================================
+app.post('/api/reloj/reiniciar', async (req, res) => {
+    try {
+        // Validamos que exista una conexión activa por socket con el Steren CLK-960
+        if (!zkInstance) {
+            return res.status(500).json({ 
+                ok: false, 
+                message: 'No hay una conexión socket activa con el reloj checador actualmente.' 
+            });
+        }
+
+        console.log('⚠️ [Mantenimiento] Solicitud de reinicio manual recibida desde Laravel.');
+        console.log('Enviando comando CMD_RESTART (1004) al dispositivo...');
+
+        // Ejecución nativa mediante node-zklib
+        const respuesta = await zkInstance.executeCmd(1004, '');
+        console.log('Respuesta del hardware:', respuesta);
+
+        return res.json({ 
+            ok: true, 
+            message: 'Comando de reinicio enviado con éxito. El reloj físico se reiniciará en breve.' 
+        });
+
+    } catch (error) {
+        console.error('❌ Error al procesar el reinicio remoto:', error);
+        return res.status(500).json({ 
+            ok: false, 
+            message: 'Error de comunicación interna con la terminal biométrica.',
+            error: error.message 
+        });
+    } // 👈 CORRECCIÓN 3: Asegurar el cierre correcto de las llaves del catch
+});
+
+// =========================================================================
+// LEVANTAR EL SERVIDOR (Siempre debe ser la última instrucción del archivo)
+// =========================================================================
 server.listen(3000, () => {
     console.log('🚀 Sistema de asistencia en línea listo en http://localhost:3000');
 });
