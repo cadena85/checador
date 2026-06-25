@@ -22,12 +22,24 @@ Route::middleware('auth')->group(function () {
 require __DIR__.'/auth.php';
 
 Route::get('/panel-simulador', function () {
-    // Listado de empleados idéntico o similar al de tu horarios.json
-    $empleados = [
-        ['id' => '1', 'nombre' => 'Juan Pérez (Horario: 08:00 - 15:00)', 'entrada' => '08:00', 'salida' => '15:00'],
-        ['id' => '2', 'nombre' => 'María Gómez (Horario: 11:30 - 18:30)', 'entrada' => '11:30', 'salida' => '18:30'],
-        ['id' => '3', 'nombre' => 'Carlos Rodríguez (Horario: 07:00 - 14:00)', 'entrada' => '07:00', 'salida' => '14:00']
-    ];
+// Definimos la ruta absoluta usando doble barra para evitar escapes en Windows
+    $rutaHorarios = base_path('bin/horarios.json');
+
+    // Verificamos si el archivo realmente existe en esa dirección
+    if (!File::exists($rutaHorarios)) {
+        abort(500, "Error crítico: No se encontró el archivo horarios.json en: " . $rutaHorarios);
+    }
+
+    // Leemos el contenido del archivo JSON
+    $contenidoJson = File::get($rutaHorarios);
+    
+    // Convertimos el JSON a un arreglo asociativo de PHP
+    $empleados = json_decode($contenidoJson, true);
+
+    // Validamos que el JSON no esté corrupto o vacío
+    if (json_last_error() !== JSON_ERROR_NONE || !is_array($empleados)) {
+        abort(500, "Error crítico: El archivo horarios.json no tiene un formato válido.");
+    }
 
     return view('panel-simulador', compact('empleados'));
 });
