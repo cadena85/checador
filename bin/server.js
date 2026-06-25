@@ -7,6 +7,29 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import cors from 'cors'; // 👈 CORRECCIÓN 1: Importar cors para evitar bloqueos de red
 
+// =========================================================================
+// CONFIGURACIÓN DE CONSOLA CON FECHA Y HORA (MÉXICO)
+// =========================================================================
+const originalLog = console.log;
+const originalError = console.error;
+
+function obtenerMarcaDeTiempo() {
+    const ahora = new Date();
+    // Ajustado a la zona horaria de la Ciudad de México
+    return `[${ahora.toLocaleString('es-MX', { timeZone: 'America/Mexico_City' })}]`;
+}
+
+// Sobrescribir console.log para los mensajes normales
+console.log = function (...args) {
+    originalLog(obtenerMarcaDeTiempo(), ...args);
+};
+
+// Sobrescribir console.error para los errores
+console.error = function (...args) {
+    originalError(obtenerMarcaDeTiempo(), ...args);
+};
+// =========================================================================
+
 // --- CONFIGURACIÓN DE RUTAS Y ENTORNO ---
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
