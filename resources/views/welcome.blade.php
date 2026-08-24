@@ -60,7 +60,7 @@
     </head>
     <body class="min-h-screen flex flex-col">
         <div class="fixed inset-0 -z-10 bg-center bg-no-repeat" 
-         style="background-image: url('{{ asset('images/fondo.jpg') }}'); background-size: 100%;">
+         style="background-image: url('{{ asset('images/fondo_blanco_luna1.jpg') }}'); background-size: 100%;">
     </div>
         <audio id="audioExito" preload="auto">
             <source src="https://actions.googlaudiosounds/v1/cartoon/wood_plank_flicks.ogg" type="audio/ogg">

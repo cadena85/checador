@@ -20,7 +20,9 @@
                 <select id="empleadoId" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-[#6f1d46] focus:outline-none transition" required>
                     <option value="" disabled selected>Escoge un miembro del personal...</option>
                     @foreach($empleados as $emp)
-                        <option value="{{ $emp['id'] }}">{{ $emp['nombre'] }}</option>
+                        <option value="{{ $emp['id'] ?? $emp['ID'] }}">
+                            {{ $emp['nombre'] ?? $emp['Nombre'] }} (Horario: {{ $emp['entrada'] ?? $emp['Entrada'] }} - {{ $emp['salida'] ?? $emp['Salida'] }})
+                        </option>
                     @endforeach
                 </select>
             </div>
@@ -39,10 +41,24 @@
                 </div>
             </div>
 
-            <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">3. Hora Simulada del Sistema</label>
-                <input type="time" id="horaSimulada" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-[#6f1d46] focus:outline-none transition" required>
-                <p class="text-[11px] text-gray-400 mt-1">Define la hora exacta con la que el servidor evaluará si existe retardo o salida anticipada.</p>
+<div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">3. Configuración del Tiempo</label>
+                
+                <div class="flex items-center space-x-6 mb-3 bg-gray-50 p-2.5 rounded-lg border border-gray-200">
+                    <label class="flex items-center text-sm font-medium text-gray-700 cursor-pointer">
+                        <input type="radio" name="modo_tiempo" value="ACTUAL" class="mr-2 accent-[#6f1d46]" checked onchange="conmutarModoTiempo()">
+                        ⏱️ Hora Actual
+                    </label>
+                    <label class="flex items-center text-sm font-medium text-gray-700 cursor-pointer">
+                        <input type="radio" name="modo_tiempo" value="MANUAL" class="mr-2 accent-[#6f1d46]" onchange="conmutarModoTiempo()">
+                        ✏️ Hora Personalizada
+                    </label>
+                </div>
+
+                <div id="contenedorHoraManual" class="opacity-50 pointer-events-none transition-all duration-200">
+                    <input type="time" id="horaSimulada" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-[#6f1d46] focus:outline-none transition" disabled>
+                </div>
+                <p class="text-[11px] text-gray-400 mt-1">Elige "Hora Actual" para usar el reloj de tu PC o "Hora Personalizada" para forzar retardos específicos.</p>
             </div>
 
             <button type="submit" class="w-full bg-[#6f1d46] hover:bg-[#5c163a] text-white font-bold p-3.5 rounded-lg text-sm tracking-wide shadow-lg hover:shadow-xl transition transform active:scale-[0.98]">
@@ -52,22 +68,60 @@
 
         <div id="consolaRespuesta" class="mt-6 p-4 rounded-xl hidden text-xs font-mono transition"></div>
     </div>
-
     <script>
+        // Función para bloquear o desbloquear el input de tiempo según la selección
+        function conmutarModoTiempo() {
+            const modo = document.querySelector('input[name="modo_tiempo"]:checked').value;
+            const inputHora = document.getElementById('horaSimulada');
+            const contenedor = document.getElementById('contenedorHoraManual');
+
+            if (modo === 'ACTUAL') {
+                inputHora.disabled = true;
+                inputHora.required = false;
+                contenedor.classList.add('opacity-50', 'pointer-events-none');
+                inputHora.value = ""; // Limpiamos el valor
+            } else {
+                inputHora.disabled = false;
+                inputHora.required = true;
+                contenedor.classList.remove('opacity-50', 'pointer-events-none');
+                
+                // Inicializar con la hora actual por comodidad del usuario
+                const ahora = new Date();
+                inputHora.value = `${String(ahora.getHours()).padStart(2, '0')}:${String(ahora.getMinutes()).padStart(2, '0')}`;
+            }
+        }
+
+        // Manejo del envío del Formulario
         document.getElementById('formSimulador').addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const empleadoId = document.getElementById('empleadoId').value;
             const tipo = document.querySelector('input[name="tipo"]:checked').value;
-            const horaSimulada = document.getElementById('horaSimulada').value;
+            const modoTiempo = document.querySelector('input[name="modo_tiempo"]:checked').value;
             const consola = document.getElementById('consolaRespuesta');
 
+            let horaFinalEnvio;
+
+            // Lógica para determinar qué hora le mandaremos a Node.js
+            if (modoTiempo === 'ACTUAL') {
+                const ahora = new Date();
+                const horas = String(ahora.getHours()).padStart(2, '0');
+                const minutos = String(ahora.getMinutes()).padStart(2, '0');
+                horaFinalEnvio = `${horas}:${minutos}`; 
+            } else {
+                horaFinalEnvio = document.getElementById('horaSimulada').value;
+            }
+
             try {
-                // Petición directa al Servidor Node Express de simulación
+                // Petición directa al Servidor Node Express
                 const response = await fetch('http://localhost:3000/api/simular-manual', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ empleadoId, tipo, horaSimulada })
+                    body: JSON.stringify({ 
+                        empleadoId, 
+                        tipo, 
+                        horaSimulada: horaFinalEnvio // Mandamos el tiempo calculado limpio
+                    })
                 });
 
                 const data = await response.json();
@@ -77,10 +131,10 @@
                     consola.classList.add('bg-green-50', 'text-green-800', 'border', 'border-green-200');
                     
                     consola.innerHTML = `
-                        <strong>🚀 ¡Checada enviada con éxito!</strong><br>
+                        <strong>🚀 ¡Checada procesada!</strong><br>
                         <strong>Empleado:</strong> ${data.registro.nombre}<br>
-                        <strong>Hora Simulada:</strong> ${data.registro.hora}<br>
-                        <strong>Estado Procesado:</strong> <span class="underline">${data.registro.estado}</span>
+                        <strong>Hora Evaluada:</strong> ${data.registro.hora}<br>
+                        <strong>Estado en Pantalla IPN:</strong> <span class="underline">${data.registro.estado}</span>
                     `;
                 } else {
                     throw new Error(data.error || 'Error desconocido');
