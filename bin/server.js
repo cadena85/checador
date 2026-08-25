@@ -52,7 +52,7 @@ let zkInstance = null;
 let relojConectado = false;
 let historialRegistros = [];  
 let contadorDescanso = 0;     
-let yaSeReinicioHoy = false;   
+let ultimaHoraReinicio = -1;
 
 // Servir archivos estáticos del frontend
 app.use(express.static(__dirname));
@@ -191,42 +191,41 @@ setInterval(async () => {
     const minutoActual = ahora.getMinutes();
     const esHorarioLaboral = horaActual >= 6;
 
-    // 1. Rango seguro: Si son las 3 AM (entre el minuto 0 y 5) y no se ha reiniciado hoy
-    if (horaActual === 3 && minutoActual >= 0 && minutoActual <= 5 && !yaSeReinicioHoy) {
+    // 1. Horarios de reinicio cada 8 horas (4:00 AM, 12:00 PM, 8:00 PM)
+    const horasReinicio = [4, 12, 20];
+
+    // Se evalúa en la ventana de los primeros 5 minutos de cada horario programado
+    if (horasReinicio.includes(horaActual) && minutoActual >= 0 && minutoActual <= 5) {
         
-        // Validamos que el reloj esté conectado
-        if (zkInstance && relojConectado) {
-            // Marcamos inmediatamente como reiniciado para evitar dobles envíos en los siguientes minutos
-            yaSeReinicioHoy = true; 
+        // Evita ejecuciones duplicadas dentro de la misma hora
+        if (ultimaHoraReinicio !== horaActual) {
             
-            try {
-                console.log('⏰ [3:00 AM] Iniciando reinicio programado diario...');
-                console.log('Enviando CMD_RESTART (1004)...');
+            // Validamos que el reloj esté conectado
+            if (zkInstance && relojConectado) {
+                // Registramos la hora actual para no volver a ejecutarlo en los siguientes minutos de esta ventana
+                ultimaHoraReinicio = horaActual; 
                 
-                // CORREGIDO: Usar zkInstance en lugar de zk
-                const respuesta = await zkInstance.executeCmd(1004, ''); 
-                console.log('Respuesta del dispositivo:', respuesta);
-
-                const horaFormateada = ahora.toLocaleTimeString(); // Obtiene la hora en formato HH:MM:SS                
-                console.log(`⏰ [${horaFormateada}] Reinicio diario ejecutado correctamente.`);
-                console.log('✅ Comando de reinicio inyectado con éxito al dispositivo.');
-                return;
-            } catch (e) {
-                const horaError = new Date().toLocaleTimeString();
-                console.error(`🧨 [${horaError}] Error de red al intentar inyectar el reinicio remoto:`, e.message);
-                console.error(e);
-                console.error(e.stack);
-                // Si falló por red, permitimos que lo vuelva a intentar en el siguiente minuto
-                yaSeReinicioHoy = false; 
+                try {
+                    const horaFormateada = ahora.toLocaleTimeString();
+                    console.log(`⏰ [${horaFormateada}] Iniciando reinicio programado cada 8h (${horaActual}:00 hrs)...`);
+                    console.log('Enviando CMD_RESTART (1004)...');
+                    
+                    const respuesta = await zkInstance.executeCmd(1004, ''); 
+                    console.log('Respuesta del dispositivo:', respuesta);
+                    console.log(`✅ [${horaFormateada}] Reinicio de las ${horaActual}:00 hrs ejecutado correctamente.`);
+                    return;
+                } catch (e) {
+                    const horaError = new Date().toLocaleTimeString();
+                    console.error(`🧨 [${horaError}] Error de red al intentar inyectar el reinicio remoto:`, e.message);
+                    console.error(e);
+                    console.error(e.stack);
+                    // Si falló por red, se permite reintentar en el siguiente minuto de la ventana
+                    ultimaHoraReinicio = -1; 
+                }
+            } else {
+                console.log('⚠️ Intento de reinicio fallido: El reloj no está conectado o zkInstance es nulo.');
             }
-        } else {
-            console.log('⚠️ Intento de reinicio fallido: El reloj no está conectado o zkInstance es nulo.');
         }
-    }
-
-    // 2. Restablecer la bandera cuando pase el horario crítico (ej. a las 3:06 AM o después)
-    if (horaActual === 3 && minutoActual > 5) {
-        yaSeReinicioHoy = false;
     }
 
     const debeHacerPing = esHorarioLaboral || (!esHorarioLaboral && contadorDescanso >= 14);
