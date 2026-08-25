@@ -10,6 +10,12 @@
 
     <div class="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
         <div class="bg-[#6f1d46] p-6 text-white text-center">
+            <a href="/" class="inline-flex items-center gap-1.5 text-[11px] text-white/70 hover:text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full border border-white/10 transition-all duration-200 mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Volver al Checador
+            </a>
             <h1 class="text-xl font-bold tracking-wide">Panel de Mantenimiento</h1>
             <p class="text-xs text-gray-200 mt-1">Control del Dispositivo Biométrico Steren CLK-960</p>
         </div>

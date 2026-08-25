@@ -85,6 +85,13 @@
                     <span id="estadoReloj" style="margin-top: 10px;" class="text-xs font-semibold text-white tracking-wide mt-0.5">Sincronizando reloj...</span>
                 </div>
             </div>
+            <a href="{{ route('login') }}" class="absolute top-3 right-4 opacity-60 hover:opacity-100 transition-opacity duration-200 text-[11px] text-white/80 bg-black/20 px-3 py-1.5 rounded-full border border-white/10 hover:bg-black/40 flex items-center gap-1.5 backdrop-blur-sm" title="Acceso Administración">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Administración
+                </a>
         </div>
         <!-- HEADER -->
         <header class="relative overflow-hidden bg-gradient-to-r from-[#5c163a] via-[#6f1d46] to-[#5c163a] border-b border-[#8a2959]/30 shadow-lg">
@@ -117,6 +124,7 @@
                 <div class="flex items-center justify-center bg-white/10 backdrop-blur-sm p-2 rounded-xl border border-white/15 shadow-inner transition hover:scale-105 duration-300">
                     <img src="{{ asset('images/logoCDA50.png') }}" class="h-14 md:h-16 object-contain" alt="Logo CDA">
                 </div>
+                
             </div>
         </header>
 

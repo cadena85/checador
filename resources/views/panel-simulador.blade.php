@@ -10,6 +10,12 @@
 
     <div class="bg-white shadow-2xl rounded-2xl max-w-lg w-full p-8 border border-gray-200">
         <div class="border-b pb-4 mb-6 text-center">
+            <a href="/" class="inline-flex items-center gap-1.5 text-[11px] text-[#6f1d46]/70 hover:text-[#6f1d46] bg-[#6f1d46]/5 hover:bg-[#6f1d46]/10 px-3 py-1.5 rounded-full border border-[#6f1d46]/10 transition-all duration-200 mb-3 font-medium">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Volver al Checador
+            </a>
             <h2 class="text-2xl font-black text-[#6f1d46]">CONTROL DE PRUEBAS</h2>
             <p class="text-sm text-gray-500 font-medium">Forzador de Huella Biométrica & Tiempos</p>
         </div>
